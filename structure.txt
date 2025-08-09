@@ -1,0 +1,53 @@
+my-react-app/
+├── backend/                      # Backend часть (Flask/FastAPI)
+│   ├── app/                      # Основное приложение
+│   │   ├── __init__.py
+│   │   ├── config.py             # Конфигурация (DB и другие настройки)
+│   │   ├── models/               # Модели SQLAlchemy
+│   │   │   ├── __init__.py
+│   │   │   ├── product.py        # Модель продукта
+│   │   │   └── search_query.py   # Модель поискового запроса
+│   │   ├── routes/               # API роуты
+│   │   │   ├── __init__.py
+│   │   │   ├── api.py           # Основные API endpoints
+│   │   │   └── wb_routes.py     # Wildberries API routes
+│   │   ├── services/             # Бизнес-логика
+│   │   │   ├── __init__.py
+│   │   │   ├── db_service.py    # Работа с БД
+│   │   │   ├── parser.py        # Парсер WB (аналог parse_wb_api)
+│   │   │   └── translator.py    # Логика перевода (аналог translate.py)
+│   │   └── utils/               # Вспомогательные утилиты
+│   │       ├── __init__.py
+│   │       ├── db_utils.py      # Утилиты для работы с БД
+│   │       └── validation.py    # Валидация данных
+│   ├── migrations/               # Миграции базы данных
+│   └── requirements.txt          # Зависимости Python
+│
+├── frontend/                     # React приложение
+│   ├── public/
+│   ├── src/
+│   │   ├── api/                 # API клиенты
+│   │   │   ├── apiClient.js     # Базовый клиент
+│   │   │   └── wbApi.js         # API для работы с WB
+│   │   ├── components/          # Компоненты UI
+│   │   │   ├── common/          # Общие компоненты
+│   │   │   ├── search/          # Компоненты поиска
+│   │   │   │   ├── SearchForm.jsx
+│   │   │   │   ├── SearchResults.jsx
+│   │   │   │   └── SavedQueries.jsx
+│   │   │   └── ui/             # UI элементы (кнопки, инпуты)
+│   │   ├── context/             # React контексты
+│   │   ├── hooks/               # Кастомные хуки
+│   │   ├── pages/               # Страницы приложения
+│   │   │   ├── HomePage.jsx     # Главная страница
+│   │   │   └── SearchPage.jsx   # Страница поиска
+│   │   ├── store/               # Состояние (Redux/Zustand)
+│   │   ├── styles/              # Стили
+│   │   ├── App.js
+│   │   └── index.js
+│   ├── package.json
+│   └── .env
+│
+├── .env                          # Общие переменные окружения
+├── docker-compose.yml            # Конфигурация Docker
+└── README.md
