@@ -1,48 +1,5 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
 .app {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -50,18 +7,100 @@
 .search-form {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-input {
-  padding: 8px;
+.search-form input {
+  flex-grow: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.search-form button {
+  padding: 10px 20px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.search-form button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #d32f2f;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fdecea;
+  border-radius: 4px;
+}
+
+.product-card {
+  display: flex;
+  gap: 30px;
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.product-images {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.product-images img {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.product-info {
   flex-grow: 1;
 }
 
-button {
+.product-info h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.product-info p {
+  margin: 8px 0;
+}
+
+.characteristics {
+  margin-top: 20px;
+}
+
+.characteristics ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.characteristics li {
+  margin-bottom: 5px;
+}
+
+.wb-link {
+  display: inline-block;
+  margin-top: 20px;
   padding: 8px 16px;
-  background: #ff0095dd;
+  background-color: #ff6b00;
   color: white;
-  border: none;
-  cursor: pointer;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.wb-link:hover {
+  background-color: #e05d00;
 }

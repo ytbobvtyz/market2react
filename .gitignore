@@ -1,7 +1,18 @@
 .env
-node_modules/
 __pycache__/
 *.pyc
 .venv
 .venv/
 venv/
+
+# Node.js
+node_modules/
+dist/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
