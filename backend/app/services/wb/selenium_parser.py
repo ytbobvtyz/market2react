@@ -6,10 +6,14 @@ from app.config import get_selenium_config, get_driver  # Измененный �
 import re
 import time
 from bs4 import BeautifulSoup
+from selenium.webdriver.chrome.options import Options
 
 class WBSeleniumParser(BaseParser):
     def __init__(self):
-        self.config = get_selenium_config()  # Получаем конфиг динамически
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")  # Режим без браузера
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
         self.driver = get_driver()
         self.wait = WebDriverWait(self.driver, 20)
         
@@ -17,7 +21,6 @@ class WBSeleniumParser(BaseParser):
         """Основной метод парсинга через Selenium"""
         try:
             self.driver.get(f"https://www.wildberries.ru/catalog/{article}/detail.aspx")
-
             # Ожидаем загрузки страницы
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "product-page")))
             time.sleep(2)
@@ -33,9 +36,11 @@ class WBSeleniumParser(BaseParser):
                 'seller_info': self._extract_seller_info(soup)
             }
             return product_data
-        finally:
+        except Exception as e:
             if self.driver:
-                self.driver.quit()  # Гарантированное закрытие драйвера
+                self.driver.quit()
+                self.driver = get_driver()  # Пересоздаем драйвер при ошибке
+            raise
 
     def _extract_name(self, soup):
         try:

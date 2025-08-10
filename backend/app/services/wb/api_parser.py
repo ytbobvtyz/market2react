@@ -2,7 +2,7 @@ import requests
 from ..base_parser import BaseParser
 
 class WBApiParser(BaseParser):
-    BASE_URL = "https://wbx-content-v2.wbstatic.net/ru/{article}.json"
+    BASE_URL = "https://card.wb.ru/cards/detail?nm={article}"
     
     def parse(self, article: str) -> dict:
         try:

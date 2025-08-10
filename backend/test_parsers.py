@@ -5,10 +5,10 @@ def test_parser():
     parser = ParserService()
     test_articles = [
         "452962756",  # Рабочий артикул
-        "999999999",  # Несуществующий (проверка fallback)
-        "invalid123"  # Некорректный
+        "240155230",  # Несуществующий (проверка fallback)
+        "255412114"  # Некорректный
     ]
-    
+
     for article in test_articles:
         try:
             logger.info(f"\nTesting article {article}")
