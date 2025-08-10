@@ -2,32 +2,37 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from ..base_parser import BaseParser
-from app.config import get_selenium_config  # Измененный импорт
+from app.config import get_selenium_config, get_driver  # Измененный импорт
 import re
+import time
+from bs4 import BeautifulSoup
 
 class WBSeleniumParser(BaseParser):
     def __init__(self):
         self.config = get_selenium_config()  # Получаем конфиг динамически
-        self.driver = None  # Инициализируем в методе parse
+        self.driver = get_driver()
+        self.wait = WebDriverWait(self.driver, 20)
         
     def parse(self, article: str) -> dict:
         """Основной метод парсинга через Selenium"""
-        self.driver = self.config['driver']()  # Создаем драйвер здесь
         try:
             self.driver.get(f"https://www.wildberries.ru/catalog/{article}/detail.aspx")
-            
+
             # Ожидаем загрузки страницы
-            wait = WebDriverWait(self.driver, self.config['wait_timeout'])
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "product-page")))
-            
-            return {
-                'name': self._extract_name(),
-                'price': self._extract_price(),
-                'brand': self._extract_brand(),
-                'rating': self._extract_rating(),
-                'feedback_count': self._extract_feedback_count(),
-                'seller_info': self._extract_seller_info()
+            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "product-page")))
+            time.sleep(2)
+            # Получаем HTML страницы
+            html = self.driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')           
+            product_data = {
+                'name': self._extract_name(soup),
+                'price': self._extract_price(soup),
+                'brand': self._extract_brand(soup),
+                'rating': self._extract_rating(soup),
+                'feedback_count': self._extract_feedback_count(soup),
+                'seller_info': self._extract_seller_info(soup)
             }
+            return product_data
         finally:
             if self.driver:
                 self.driver.quit()  # Гарантированное закрытие драйвера

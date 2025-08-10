@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 from typing import List, Dict, Any
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 
@@ -24,7 +25,10 @@ settings = Settings()
 
 # Конфигурация Selenium (вычисляется при первом использовании)
 def get_selenium_config() -> Dict[str, Any]:
-    chrome_options = webdriver.ChromeOptions()
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # Режим без браузера
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     if settings.SELENIUM_HEADLESS:
         chrome_options.add_argument("--headless=new")
     
@@ -35,3 +39,52 @@ def get_selenium_config() -> Dict[str, Any]:
         ),
         'wait_timeout': settings.SELENIUM_TIMEOUT
     }
+
+def get_driver():
+    options = Options()
+    
+    # Основные параметры
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
+    
+    # Параметры для обхода антибот-систем
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+    
+    # Для Linux сервера
+    options.binary_location = "/usr/bin/google-chrome"
+    
+    # Дополнительные параметры
+    options.add_argument("--lang=ru-RU,ru")
+    options.add_argument("--accept-lang=ru-RU,ru")
+    
+    try:
+        service = Service(
+            ChromeDriverManager().install(),
+            service_args=['--verbose'],
+            log_path='chromedriver.log'
+        )
+        
+        driver = webdriver.Chrome(service=service, options=options)
+        
+        # Изменяем свойства браузера, чтобы выглядеть более "человечно"
+        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+            'source': '''
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined
+                });
+                Object.defineProperty(navigator, 'plugins', {
+                    get: () => [1, 2, 3]
+                });
+            '''
+        })
+        print ("УСПЕХ в функции get_driver()")
+        return driver
+    except Exception as e:
+        print(f"НЕУДАЧА УСПЕХ в функции get_driver() - Ошибка при создании драйвера: {str(e)}")
+        raise

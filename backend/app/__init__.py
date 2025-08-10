@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 
+
+
+
 # Инициализация приложения FastAPI
 app = FastAPI(
     title="WB Wishlist API",
@@ -20,13 +23,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Импорт и подключение роутеров
-from .routes import wb_routes, api  # api.py из вашей структуры
 
-app.include_router(api.router, prefix="/api")
-app.include_router(wb_routes.router, prefix="/api/wb")
+from .utils.logger import logger
+# Инициализация логгера
+logger.info("Application initialized")
+
+
+# Подключаем роутеры после инициализации
+from .routes import api, wb_routes
+app.include_router(api.router)
+app.include_router(wb_routes.router)
 
 # Тестовый эндпоинт для проверки работы
 @app.get("/api/healthcheck")
 async def healthcheck():
     return {"status": "ok", "message": "WB Wishlist API работает"}
+
+
+
+
+# Подключаем роутеры после инициализации
+from .routes import api, wb_routes
+app.include_router(api.router)
+app.include_router(wb_routes.router)
