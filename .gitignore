@@ -18,4 +18,3 @@ dist/
 .idea/
 
 parse_data.py
-test_parse.py
