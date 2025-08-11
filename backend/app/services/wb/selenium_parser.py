@@ -33,7 +33,6 @@ class WBSeleniumParser(BaseParser):
                 'brand': self._extract_brand(soup),
                 'rating': self._extract_rating(soup),
                 'feedback_count': self._extract_feedback_count(soup),
-                'seller_info': self._extract_seller_info(soup)
             }
             return product_data
         except Exception as e:

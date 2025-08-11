@@ -1,42 +1,37 @@
 import { useState } from 'react';
 import './App.css';
+import axios from 'axios';
+
 
 function App() {
   const [nmId, setNmId] = useState('');
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const handleSearch = async () => {
-    if (!nmId.trim()) {
-      setError('Введите артикул WB');
-      return;
-    }
+  if (!/^\d+$/.test(nmId)) {
+    setError('Артикул должен содержать только цифры');
+    return;
+  }
 
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await fetch(`http://localhost:5000/api/wb/product/${nmId.trim()}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Ошибка при запросе данных');
-      }
-      
-      const data = await response.json();
-      setProduct(data);
-    } catch (err) {
-      setError(err.message);
-      setProduct(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError('');
+  
+  try {
+    const { data } = await axios.get(`http://localhost:8000/products/${nmId}`);
+    setProduct(data);
+  } catch (err) {
+    setError(err.response?.data?.detail || 
+      err.message === 'Network Error' ? 'Сервер недоступен' : 'Ошибка запроса');
+    setProduct(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="app">
-      <h1>WB Wishlist</h1>
+      <h1>WishBenefit</h1>
       <div className="search-form">
         <input
           type="text"
@@ -54,38 +49,25 @@ function App() {
 
       {product && (
         <div className="product-card">
-          <div className="product-images">
-            {product.pics.slice(0, 3).map((pic, index) => (
-              <img 
-                key={index} 
-                src={pic} 
-                alt={`${product.name} ${index + 1}`}
-                onError={(e) => e.target.src = 'https://via.placeholder.com/150'}
-              />
-            ))}
-          </div>
-          
           <div className="product-info">
             <h2>{product.name}</h2>
             <p><strong>Бренд:</strong> {product.brand}</p>
-            <p><strong>Цена:</strong> {Math.floor(product.price / 100)} ₽</p>
+            <p><strong>Цена:</strong> {Math.floor(product.price)} ₽</p>
             <p><strong>Рейтинг товара:</strong> {product.rating || 'нет данных'}</p>
-            <p><strong>Рейтинг продавца:</strong> {product.sellerRating || 'нет данных'}</p>
-            <p><strong>Отзывы:</strong> {product.feedbacks || 0}</p>
-            
+            <p><strong>Количество отзывов:</strong> {product.feedback_count || 'нет данных'}</p>
             <div className="characteristics">
-              <h3>Характеристики:</h3>
+              {/* <h3>Характеристики:</h3>
               <ul>
                 {product.characteristics.map((group, i) => (
                   <li key={i}>
                     <strong>{group.name}:</strong> {group.options.join(', ')}
                   </li>
                 ))}
-              </ul>
+              </ul> */}
             </div>
             
             <a 
-              href={`https://www.wildberries.ru/catalog/${product.nmId}/detail.aspx`}
+              href={`https://www.wildberries.ru/catalog/${nmId}/detail.aspx`}
               target="_blank"
               rel="noopener noreferrer"
               className="wb-link"

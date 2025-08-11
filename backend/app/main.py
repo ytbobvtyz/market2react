@@ -5,7 +5,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routes.wb_routes import router as wb_router
 
-
 app = FastAPI()
 app.include_router(wb_router)
 
@@ -21,3 +20,4 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "Market2React API"}
+

@@ -5,8 +5,9 @@ router = APIRouter()
 parser_service = ParserService()
 
 @router.get("/products/{article}")
-async def get_product(article: str):
+async def get_product(article: str):  # Можно оставить async (FastAPI поддерживает)
     try:
-        return await parser_service.parse_wb_product(article)
+        data = parser_service.parse_wb_product(article)
+        return data
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

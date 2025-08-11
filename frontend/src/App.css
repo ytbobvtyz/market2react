@@ -20,7 +20,7 @@
 
 .search-form button {
   padding: 10px 20px;
-  background-color: #0066cc;
+  background-color: #cc00c5;
   color: white;
   border: none;
   border-radius: 4px;
@@ -95,12 +95,12 @@
   display: inline-block;
   margin-top: 20px;
   padding: 8px 16px;
-  background-color: #ff6b00;
+  background-color: #cc00c5;
   color: white;
   text-decoration: none;
   border-radius: 4px;
 }
 
 .wb-link:hover {
-  background-color: #e05d00;
+  background-color: #540352;
 }
