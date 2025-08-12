@@ -1,0 +1,33 @@
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.username {
+  font-weight: bold;
+  color: #333;
+}
+
+.menu-link, .auth-link {
+  color: #2c3e50;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.menu-link:hover, .auth-link:hover {
+  color: #1a73e8;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+}
+
+.logout-button:hover {
+  text-decoration: underline;
+}

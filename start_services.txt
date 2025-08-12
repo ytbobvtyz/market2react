@@ -1,5 +1,5 @@
 frontend: npm run dev
-backend: uvicorn main:app --reload
+backend: uvicorn app.main:app --reload
 
 sudo lsof -i :8000
 

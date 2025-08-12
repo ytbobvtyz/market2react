@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { AuthContext } from './contexts/auth-context';
+import { UserMenu } from './components/UserMenu';
 import './App.css';
 import axios from 'axios';
 
@@ -9,10 +11,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const handleSearch = async () => {
-  if (!/^\d+$/.test(nmId)) {
-    setError('Артикул должен содержать только цифры');
-    return;
-  }
+  const { isAuthenticated } = useContext(AuthContext);
+
+  const handleSearch = async () => {
+    if (!/^\d+$/.test(nmId)) {
+      setError('Артикул должен содержать только цифры');
+      return;
+    }
+  };
 
   setLoading(true);
   setError('');
@@ -31,7 +37,11 @@ function App() {
 
   return (
     <div className="app">
-      <h1>WishBenefit</h1>
+      <header className="app-header">
+        <h1>WishBenefit</h1>
+        <UserMenu />
+      </header>
+
       <div className="search-form">
         <input
           type="text"
