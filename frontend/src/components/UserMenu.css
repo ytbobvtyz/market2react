@@ -1,33 +1,82 @@
 .user-menu {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.username {
-  font-weight: bold;
-  color: #333;
+.user-greeting {
+  color: #4a5568;
+  font-weight: 500;
+  margin-right: 10px;
 }
 
 .menu-link, .auth-link {
-  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   text-decoration: none;
-  transition: color 0.3s;
+  color: #2d3748;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .menu-link:hover, .auth-link:hover {
-  color: #1a73e8;
+  background-color: #edf2f7;
 }
 
-.logout-button {
+.menu-link {
+  color: #dfb3e3;
+}
+
+.menu-link:hover {
+  color: #dfb3e3;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
-  color: #e74c3c;
+  color: #e53e3e;
   cursor: pointer;
-  padding: 0;
-  font-size: inherit;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-size: 14px;
 }
 
-.logout-button:hover {
-  text-decoration: underline;
+.logout-btn:hover {
+  background-color: #fff5f5;
+}
+
+.register-link {
+  color: #fff;
+  background-color: #ce31af;
+  padding: 8px 16px;
+}
+
+.register-link:hover {
+  background-color: #ce31af;
+  color: #fff;
+}
+
+/* Иконки (можно заменить на реальные иконки из библиотеки) */
+.icon-login::before {
+  content: "→";
+}
+
+.icon-register::before {
+  content: "+";
+}
+
+.icon-requests::before {
+  content: "📋";
+}
+
+.icon-logout::before {
+  content: "🚪";
 }

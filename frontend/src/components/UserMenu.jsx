@@ -1,25 +1,32 @@
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/auth-context';
-import './UserMenu.css';
+import './UserMenu.css'; // Импорт стилей
 
-export const UserMenu = () => {
+export function UserMenu() {
   const { isAuthenticated, user, logout } = useContext(AuthContext);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="user-menu">
-        <a href="/login" className="auth-link">Авторизация</a>
-        <span> / </span>
-        <a href="/register" className="auth-link">Регистрация</a>
-      </div>
-    );
-  }
 
   return (
     <div className="user-menu">
-      <span className="username">{user?.username || 'Пользователь'}</span>
-      <a href="/requests" className="menu-link">Мои запросы</a>
-      <button onClick={logout} className="logout-button">Выйти</button>
+      {isAuthenticated ? (
+        <>
+          <span className="user-greeting">Привет, {user?.username || 'друг'}!</span>
+          <a href="/requests" className="menu-link">
+            <i className="icon-requests"></i> Мои запросы
+          </a>
+          <button onClick={logout} className="logout-btn">
+            <i className="icon-logout"></i> Выйти
+          </button>
+        </>
+      ) : (
+        <>
+          <a href="/login" className="auth-link">
+            <i className="icon-login"></i> Войти
+          </a>
+          <a href="/register" className="auth-link register-link">
+            <i className="icon-register"></i> Регистрация
+          </a>
+        </>
+      )}
     </div>
   );
-};
+}

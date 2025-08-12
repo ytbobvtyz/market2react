@@ -1,39 +1,57 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { AuthContext } from './contexts/auth-context';
 import { UserMenu } from './components/UserMenu';
 import './App.css';
 import axios from 'axios';
-
 
 function App() {
   const [nmId, setNmId] = useState('');
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const handleSearch = async () => {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, user, login } = useContext(AuthContext);
+  const [saveStatus, setSaveStatus] = useState('');
 
   const handleSearch = async () => {
     if (!/^\d+$/.test(nmId)) {
       setError('Артикул должен содержать только цифры');
       return;
     }
+
+    setLoading(true);
+    setError('');
+    
+    try {
+      const { data } = await axios.get(`http://localhost:8000/products/${nmId}`);
+      setProduct(data);
+    } catch (err) {
+      setError(err.response?.data?.detail || 
+        err.message === 'Network Error' ? 'Сервер недоступен' : 'Ошибка запроса');
+      setProduct(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  setLoading(true);
-  setError('');
-  
-  try {
-    const { data } = await axios.get(`http://localhost:8000/products/${nmId}`);
-    setProduct(data);
-  } catch (err) {
-    setError(err.response?.data?.detail || 
-      err.message === 'Network Error' ? 'Сервер недоступен' : 'Ошибка запроса');
-    setProduct(null);
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleSaveRequest = async () => {
+    if (!isAuthenticated) {
+      setSaveStatus('Для сохранения необходимо авторизоваться');
+      return;
+    }
+
+    try {
+      setSaveStatus('Сохранение...');
+      await axios.post('http://localhost:8000/saved-requests/', {
+        user_id: user.id,
+        nm_id: nmId,
+        product_data: product
+      });
+      setSaveStatus('Запрос сохранён!');
+    } catch (err) {
+      setSaveStatus('Ошибка сохранения');
+      console.error(err);
+    }
+  };
 
   return (
     <div className="app">
@@ -66,24 +84,26 @@ function App() {
             <p><strong>Рейтинг товара:</strong> {product.rating || 'нет данных'}</p>
             <p><strong>Количество отзывов:</strong> {product.feedback_count || 'нет данных'}</p>
             <div className="characteristics">
-              {/* <h3>Характеристики:</h3>
-              <ul>
-                {product.characteristics.map((group, i) => (
-                  <li key={i}>
-                    <strong>{group.name}:</strong> {group.options.join(', ')}
-                  </li>
-                ))}
-              </ul> */}
+              {/* Характеристики */}
             </div>
-            
-            <a 
-              href={`https://www.wildberries.ru/catalog/${nmId}/detail.aspx`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="wb-link"
-            >
-              Открыть на Wildberries
-            </a>
+            <div className="product-actions">
+              <button 
+                onClick={handleSaveRequest}
+                className="save-request-btn"
+                disabled={!!saveStatus}
+              >
+                {saveStatus || 'Сохранить мой запрос'}
+              </button>
+              
+              <a 
+                href={`https://www.wildberries.ru/catalog/${nmId}/detail.aspx`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="wb-link"
+              >
+                Открыть на Wildberries
+              </a>
+            </div>
           </div>
         </div>
       )}
