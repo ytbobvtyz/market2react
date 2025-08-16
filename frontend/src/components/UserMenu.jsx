@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/auth-context';
-import './UserMenu.css'; // Импорт стилей
+import './UserMenu.css';
 
 export function UserMenu() {
-  const { isAuthenticated, user, logout } = useContext(AuthContext);
+  const { isAuthenticated, user, logout, showAuthModal } = useContext(AuthContext);
 
   return (
     <div className="user-menu">
@@ -19,12 +19,18 @@ export function UserMenu() {
         </>
       ) : (
         <>
-          <a href="/login" className="auth-link">
+          <button 
+            onClick={() => showAuthModal(true)} 
+            className="auth-link"
+          >
             <i className="icon-login"></i> Войти
-          </a>
-          <a href="/register" className="auth-link register-link">
+          </button>
+          <button 
+            onClick={() => showAuthModal(false)} 
+            className="auth-link register-link"
+          >
             <i className="icon-register"></i> Регистрация
-          </a>
+          </button>
         </>
       )}
     </div>
