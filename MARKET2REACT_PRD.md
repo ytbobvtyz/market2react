@@ -46,34 +46,43 @@
 - Асинхронные задачи: Celery + Redis (расписание проверок).  
 
 ### 2.2. Схема базы данных  
-sql  
+sql
 
-TABLE users (  
-  id UUID PRIMARY KEY,  
-  email TEXT UNIQUE,  
-  telegram_chat_id TEXT,  -- для уведомлений  
-  subscription_tier TEXT  -- "free" или "pro"  
-);  
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telegram_chat_id VARCHAR(100),
+    subscription_tier VARCHAR(100),
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-TABLE trackings (  
-  id UUID PRIMARY KEY,  
-  user_id UUID REFERENCES users(id),  
-  wb_item_id TEXT,       -- ID товара на WB  
-  custom_name TEXT,      -- "Кроссовки Nike мечты"  
-  desired_price DECIMAL,  
+CREATE TABLE trackings (
+  id UUID PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  wb_item_id BIGINT,
+  custom_name TEXT,
+  desired_price DECIMAL,
   min_rating FLOAT,
-  min_comment INTEGER
-  is_active BOOLEAN,  
-  created_at TIMESTAMP  
-);  
+  min_comment INTEGER,
+  is_active BOOLEAN,
+  created_at TIMESTAMP
+);
 
-TABLE price_history (  
+CREATE INDEX idx_trackings_wb_item_id ON trackings(wb_item_id);
+
+CREATE TABLE price_history (  
   id UUID PRIMARY KEY,  
-  tracking_id UUID REFERENCES trackings(id),  
+  tracking_id UUID REFERENCES trackings(id),
+  wb_id BIGINT, 
+  wb_name TEXT,
+  rating FLOAT,
+  comment_count INTEGER,
   price DECIMAL,  
   checked_at TIMESTAMP  
-);  
-  
+);
 
 ### 2.3. API-интеграция с Wildberries  
 - Используем официальное API WB для поиска товаров и получения актуальных цен.  
@@ -121,7 +130,7 @@ TABLE price_history (
 [DONE] Разработать парсеры API и selenium
 [DONE] Минимальная страница поиска на frontend
 [DONE] Пробросить вывод результатов парсинга из backend в frontend
-[TODO] Frontend: Установить элементы дизайна страницы поиска - login/регистрация, переход на страницу отслеживания запросов, кнопка "Добавить в список отслеживания"
+[DONE] Frontend: Установить элементы дизайна страницы поиска - login/регистрация, переход на страницу отслеживания запросов, кнопка "Добавить в список отслеживания"
 [TODO]Backend - реализовать форму регистрации и логина, добавить регистрацию/логин при попытке добавить в список отслеживания при отсутсвии запросов
 [TODO]Backend - развернуть базу данных на внешнем сервере, продумать структуру таблиц и взаимосвязей.
 

@@ -1,6 +1,6 @@
 frontend: npm run dev
 backend: uvicorn app.main:app --reload
+ssh неищи@147.45.102.68
 
 sudo lsof -i :8000
-
 sudo kill -9 <PID> 
