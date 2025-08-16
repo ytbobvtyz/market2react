@@ -1,21 +1,53 @@
 import { useState } from 'react';
+import axios from 'axios';
 import './AuthModal.css';
 
 export function AuthModal({ isLoginMode, onClose, onLogin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    username: ''
+  });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
     try {
-      // Заглушка для примера
-      console.log({ email, password, username });
-      onLogin({ username: email.split('@')[0] }); // Временные данные
+      const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+      const payload = isLoginMode 
+        ? { email: formData.email, password: formData.password }
+        : formData;
+
+      const { data } = await axios.post(
+        `http://localhost:8000${endpoint}`,
+        payload
+      );
+
+      // Вызываем onLogin с данными пользователя и токеном
+      onLogin({
+        user: data.user,
+        token: data.token
+      });
+      
       onClose();
     } catch (err) {
-      setError('Ошибка при регистрации');
+      setError(
+        err.response?.data?.detail || 
+        'Произошла ошибка. Проверьте введенные данные'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -31,31 +63,46 @@ export function AuthModal({ isLoginMode, onClose, onLogin }) {
           {!isLoginMode && (
             <input
               type="text"
+              name="username"
               placeholder="Имя пользователя"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={formData.username}
+              onChange={handleChange}
               required
+              minLength={3}
             />
           )}
           
           <input
             type="email"
+            name="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
             required
           />
           
           <input
             type="password"
+            name="password"
             placeholder="Пароль"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={handleChange}
             required
+            minLength={8}
           />
           
-          <button type="submit">
-            {isLoginMode ? 'Войти' : 'Зарегистрироваться'}
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className={isLoading ? 'loading' : ''}
+          >
+            {isLoading ? (
+              'Загрузка...'
+            ) : isLoginMode ? (
+              'Войти'
+            ) : (
+              'Зарегистрироваться'
+            )}
           </button>
         </form>
 

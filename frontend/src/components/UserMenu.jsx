@@ -1,9 +1,23 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AuthContext } from '../contexts/auth-context';
+import { AuthModal } from './AuthModal'; // Добавляем импорт модалки
 import './UserMenu.css';
 
 export function UserMenu() {
-  const { isAuthenticated, user, logout, showAuthModal } = useContext(AuthContext);
+  const { isAuthenticated, user, logout } = useContext(AuthContext);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
+
+  const handleAuthSuccess = (authData) => {
+    // Обработка успешной аутентификации
+    console.log('Auth success:', authData);
+    setAuthModalOpen(false);
+  };
+
+  const showAuthModal = (loginMode) => {
+    setIsLoginMode(loginMode);
+    setAuthModalOpen(true);
+  };
 
   return (
     <div className="user-menu">
@@ -32,6 +46,15 @@ export function UserMenu() {
             <i className="icon-register"></i> Регистрация
           </button>
         </>
+      )}
+
+      {/* Модальное окно аутентификации */}
+      {authModalOpen && (
+        <AuthModal
+          isLoginMode={isLoginMode}
+          onClose={() => setAuthModalOpen(false)}
+          onLogin={handleAuthSuccess}
+        />
       )}
     </div>
   );
