@@ -9,7 +9,14 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserResponse)
 async def register(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = get_user_by_email(db, user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return create_user(db, user)
+    try:
+        db_user = create_user(db, user)
+        return {
+            "id": db_user.id,
+            "username": db_user.username,
+            "email": db_user.email,
+            "created_at": db_user.created_at.isoformat(),  # Явное преобразование
+            "updated_at": db_user.updated_at.isoformat()   # Явное преобразование
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
