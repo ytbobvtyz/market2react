@@ -5,4 +5,11 @@ ssh неищи@147.45.102.68
 sudo lsof -i :8000
 sudo kill -9 <PID> 
 
+
+Работа с пакетами backend
+pip install --upgrade pip
+pip freeze > requirements.txt
 pip install -r requirements.txt
+
+Загрузки web
+http://localhost:8000/docs

@@ -26,8 +26,11 @@ class UserResponse(BaseModel):
     email: str
     telegram_chat_id: Optional[str] = None
     subscription_tier: Optional[str] = None
-    created_at: str
-    updated_at: str
-
+    created_at: datetime
+    updated_at: datetime
     class Config:
         from_attributes = True  # Заменяет orm_mode в Pydantic v2
+
+    @field_validator('created_at', mode='before')
+    def format_datetime(cls, value):
+        return value.isoformat() if value else None
