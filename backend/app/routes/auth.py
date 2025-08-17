@@ -35,3 +35,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         "token_type": "bearer",
         "user": UserResponse.model_validate(user)
     }
+
+# @router.get("/me", response_model=UserResponse)
+# async def get_current_user(
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user)  # Реализуйте эту зависимость
+# ):
+#     return current_user

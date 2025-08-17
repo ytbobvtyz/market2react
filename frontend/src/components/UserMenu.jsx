@@ -4,17 +4,16 @@ import { AuthModal } from './AuthModal'; // Добавляем импорт мо
 import './UserMenu.css';
 
 export function UserMenu() {
-  const { isAuthenticated, user, logout } = useContext(AuthContext);
+  const { isAuthenticated, user, logout, login } = useContext(AuthContext);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
 
-  const handleAuthSuccess = (authData) => {
-    // Обработка успешной аутентификации
-    console.log('Auth success:', authData);
-    setAuthModalOpen(false);
-  };
+  const handleAuthSuccess = ({ user: userData, token }) => {
+  login(userData, token); // Используем метод из контекста
+  setAuthModalOpen(false);
+};
 
-  const showAuthModal = (loginMode) => {
+  const showAuthModal = (loginMode = true) => {
     setIsLoginMode(loginMode);
     setAuthModalOpen(true);
   };
@@ -54,6 +53,7 @@ export function UserMenu() {
           isLoginMode={isLoginMode}
           onClose={() => setAuthModalOpen(false)}
           onLogin={handleAuthSuccess}
+          switchMode={() => setIsLoginMode(!isLoginMode)}
         />
       )}
     </div>

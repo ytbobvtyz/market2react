@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import './AuthModal.css';
 
-export function AuthModal({ isLoginMode, onClose, onLogin }) {
+export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,26 +24,68 @@ export function AuthModal({ isLoginMode, onClose, onLogin }) {
     setError('');
 
     try {
-      const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
-      const payload = isLoginMode 
-        ? { email: formData.email, password: formData.password }
-        : formData;
+      let response;
+      
+      if (isLoginMode) {
+        // Для логина используем FormData как ожидает OAuth2
+        const formData = new FormData();
+        formData.append('username', formData.email); // backend ожидает username, но мы используем email
+        formData.append('password', formData.password);
+        
+        response = await axios.post(
+          'http://localhost:8000/auth/login',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+      } else {
+        // Для регистрации обычный JSON
+        response = await axios.post(
+          'http://localhost:8000/auth/register',
+          {
+            email: formData.email,
+            password: formData.password,
+            username: formData.username
+          }
+        );
+      }
 
-      const { data } = await axios.post(
-        `http://localhost:8000${endpoint}`,
-        payload
-      );
-
-      // Вызываем onLogin с данными пользователя и токеном
-      onLogin({
-        user: data.user,
-        token: data.token
-      });
+      // Обрабатываем успешный ответ
+      if (isLoginMode) {
+        onLogin({
+          user: response.data.user,
+          token: response.data.access_token // исправлено с data.token
+        });
+      } else {
+        // После регистрации автоматически логиним пользователя
+        const loginResponse = await axios.post(
+          'http://localhost:8000/auth/login',
+          new URLSearchParams({
+            username: formData.email,
+            password: formData.password
+          }),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          }
+        );
+        
+        onLogin({
+          user: loginResponse.data.user,
+          token: loginResponse.data.access_token
+        });
+      }
       
       onClose();
     } catch (err) {
+      console.error('Auth error:', err);
       setError(
         err.response?.data?.detail || 
+        err.message || 
         'Произошла ошибка. Проверьте введенные данные'
       );
     } finally {
@@ -108,7 +150,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin }) {
 
         <button 
           className="switch-mode-btn"
-          onClick={() => onClose()}
+          onClick={switchMode} // Исправлено с onClose
         >
           {isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
         </button>
