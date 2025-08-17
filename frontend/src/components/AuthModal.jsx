@@ -27,17 +27,17 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
       let response;
       
       if (isLoginMode) {
-        // Для логина используем FormData как ожидает OAuth2
-        const formData = new FormData();
-        formData.append('username', formData.email); // backend ожидает username, но мы используем email
-        formData.append('password', formData.password);
-        
+        // Используем URLSearchParams вместо FormData
+        const params = new URLSearchParams();
+        params.append('username', formData.email); // именно 'username'!
+        params.append('password', formData.password);
+
         response = await axios.post(
           'http://localhost:8000/auth/login',
-          formData,
+          params.toString(), // явное преобразование в строку
           {
             headers: {
-              'Content-Type': 'multipart/form-data'
+              'Content-Type': 'application/x-www-form-urlencoded' // правильный тип
             }
           }
         );

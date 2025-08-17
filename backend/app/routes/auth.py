@@ -25,10 +25,18 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    print(f"Полученные данные: username='{form_data.username}' password='{form_data.password}'")
+    print(f"Login attempt for: {form_data.username}") 
     user = get_user_by_email(db, form_data.username)
-    if not user or not verify_password(form_data.password, user.password_hash):
+    print(f"User found: {bool(user)}")  # Логирование
+    if not user:
+        print("User not found")  # Логирование
         raise HTTPException(status_code=401, detail="Incorrect email or password")
-    
+    print(f"Password verification: {verify_password(form_data.password, user.password_hash)}")  # Логирование
+    if not  verify_password(form_data.password, user.password_hash):
+        print("Invalid password")  # Логирование
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    print("Login successful")  # Логирование
     access_token = create_access_token({"sub": user.email})
     return {
         "access_token": access_token,

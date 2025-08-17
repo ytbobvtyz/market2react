@@ -33,4 +33,4 @@ class UserResponse(BaseModel):
 
     @field_validator('created_at', mode='before')
     def format_datetime(cls, value):
-        return value.isoformat() if value else None
+        return value if value else None

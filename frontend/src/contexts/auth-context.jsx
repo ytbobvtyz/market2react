@@ -25,9 +25,10 @@ export function AuthProvider({ children }) {
   }, [token, user]);
 
 const login = (userData, token) => {
+  console.log('Context login:', { userData, token }); // Добавьте логирование
   setUser(userData);
-  setIsAuthenticated(true);
   setToken(token); // Добавьте состояние токена в контекст
+  localStorage.setItem('authToken', token);
 };
 
   const logout = () => {
