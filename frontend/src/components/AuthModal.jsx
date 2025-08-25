@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { setAuthToken } from '../api/apiService'; // Импорт функции
 import axios from 'axios';
 import './AuthModal.css';
 
@@ -55,9 +56,12 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
 
       // Обрабатываем успешный ответ
       if (isLoginMode) {
+        // ВАЖНО: Используем setAuthToken для сохранения токена
+        setAuthToken(response.data.access_token);
+        
         onLogin({
           user: response.data.user,
-          token: response.data.access_token // исправлено с data.token
+          token: response.data.access_token
         });
       } else {
         // После регистрации автоматически логиним пользователя
@@ -73,6 +77,9 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
             }
           }
         );
+        
+        // ВАЖНО: Используем setAuthToken для сохранения токена
+        setAuthToken(loginResponse.data.access_token);
         
         onLogin({
           user: loginResponse.data.user,
@@ -93,6 +100,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
     }
   };
 
+  // ... остальной код без изменений ...
   return (
     <div className="modal-overlay">
       <div className="modal">
@@ -150,7 +158,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
 
         <button 
           className="switch-mode-btn"
-          onClick={switchMode} // Исправлено с onClose
+          onClick={switchMode}
         >
           {isLoginMode ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
         </button>

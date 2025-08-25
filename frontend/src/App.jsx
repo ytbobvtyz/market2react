@@ -2,14 +2,15 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from './contexts/auth-context';
 import { UserMenu } from './components/UserMenu';
 import { AuthModal } from './components/AuthModal';
-
+import { parsingService } from './api/parsingService';
+import { setAuthToken } from './api/apiService'; // Добавляем импорт
 import './App.css';
 import axios from 'axios';
 
 // Настройка интерцепторов axios
 const setupAxiosInterceptors = () => {
   axios.interceptors.request.use(config => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('access_token'); // Меняем на access_token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -20,7 +21,7 @@ const setupAxiosInterceptors = () => {
     response => response,
     error => {
       if (error.response?.status === 401) {
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('access_token'); // Меняем на access_token
         // Можно добавить редирект или обновление состояния
       }
       return Promise.reject(error);
@@ -37,11 +38,12 @@ function App() {
   const [saveStatus, setSaveStatus] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [parsingLoading, setParsingLoading] = useState(false);
 
   useEffect(() => {
     setupAxiosInterceptors();
     
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('access_token');
     if (token && !isAuthenticated) {
       const loadUser = async () => {
         try {
@@ -50,10 +52,10 @@ function App() {
               Authorization: `Bearer ${token}`
             }
           });
-          authLogin(response.data.user);
+          authLogin(response.data);
         } catch (error) {
           console.error('Failed to load user', error);
-          localStorage.removeItem('authToken');
+          localStorage.removeItem('access_token'); // Меняем на access_token
         }
       };
       
@@ -62,8 +64,9 @@ function App() {
   }, [isAuthenticated, authLogin]);
 
   const handleLoginSuccess = ({ user, token }) => {
-    localStorage.setItem('authToken', token);
-    authLogin(user); // Вызываем метод login из AuthContext
+    // Используем функцию setAuthToken вместо прямого сохранения
+    setAuthToken(token);
+    authLogin(user);
     setIsAuthModalOpen(false);
   };
 
@@ -79,6 +82,10 @@ function App() {
     try {
       const { data } = await axios.get(`http://localhost:8000/products/${nmId}`);
       setProduct(data);
+      // Сохраняем данные в localStorage для последующего использования
+      localStorage.setItem('searchData', JSON.stringify([data]));
+      localStorage.setItem('query', nmId);
+
     } catch (err) {
       setError(err.response?.data?.detail || 
         err.message === 'Network Error' ? 'Сервер недоступен' : 'Ошибка запроса');
@@ -91,21 +98,44 @@ function App() {
   const handleSaveRequest = async () => {
     if (!isAuthenticated) {
       setSaveStatus('Для сохранения необходимо авторизоваться');
-      setIsAuthModalOpen(true); // Открываем модальное окно авторизации
+      setIsAuthModalOpen(true);
       return;
     }
 
+    setParsingLoading(true);
     try {
-      setSaveStatus('Сохранение...');
-      await axios.post('http://localhost:8000/saved-requests/', {
-        user_id: user.id,
-        nm_id: nmId,
-        product_data: product
-      });
-      setSaveStatus('Запрос сохранён!');
-    } catch (err) {
-      setSaveStatus('Ошибка сохранения');
-      console.error(err);
+      // Получаем данные из localStorage
+      const searchData = localStorage.getItem('searchData');
+      const query = localStorage.getItem('query');
+      
+      if (!searchData || !query) {
+        alert('Нет данных для сохранения. Сначала выполните поиск.');
+        return;
+      }
+
+      const results = JSON.parse(searchData);
+      
+      // Сохраняем в базу данных через наш сервис
+      const saveResult = await parsingService.saveParsingResults(query, results);
+      
+      // Открываем Wildberries
+      window.open(`https://www.wildberries.ru/catalog/${nmId}/detail.aspx`, '_blank');
+      
+      alert(`Данные сохранены! Сохранено товаров: ${saveResult.details.saved_count}`);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      
+      // Если ошибка авторизации
+      if (error.response?.status === 401) {
+        alert('Сессия истекла. Пожалуйста, войдите снова.');
+        localStorage.removeItem('access_token'); // Меняем на access_token
+        window.location.reload();
+      } else {
+        alert(error.message || 'Ошибка при сохранении данных');
+      }
+    } finally {
+      setParsingLoading(false);
     }
   };
 
@@ -146,9 +176,9 @@ function App() {
               <button 
                 onClick={handleSaveRequest}
                 className="save-request-btn"
-                disabled={!!saveStatus}
+                disabled={parsingLoading} // Меняем условие disabled
               >
-                {saveStatus || 'Сохранить мой запрос'}
+                {parsingLoading ? 'Сохранение...' : 'Сохранить и открыть WB'}
               </button>
               
               <a 
@@ -157,12 +187,13 @@ function App() {
                 rel="noopener noreferrer"
                 className="wb-link"
               >
-                Открыть на Wildberries
+                Только открыть Wildberries
               </a>
             </div>
           </div>
         </div>
       )}
+      
       {/* Модальное окно авторизации */}
       {isAuthModalOpen && (
         <AuthModal

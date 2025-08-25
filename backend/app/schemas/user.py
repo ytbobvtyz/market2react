@@ -34,3 +34,11 @@ class UserResponse(BaseModel):
     @field_validator('created_at', mode='before')
     def format_datetime(cls, value):
         return value if value else None
+
+class CurrentUser(BaseModel):
+    id: int
+    email: str
+    username: str
+    
+    class Config:
+        from_attributes = True

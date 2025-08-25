@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from ..schemas.user import UserCreate, UserResponse
+from ..schemas.user import UserCreate, UserResponse, CurrentUser
 from ..services.db_service import get_user_by_email, create_user
-from ..utils.db_utils import get_db
-from ..utils.auth import create_access_token, verify_password
+from app.database import get_db
+from ..utils.auth import create_access_token, verify_password, get_current_user
+from ..models.user import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -25,7 +26,6 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    print(f"Полученные данные: username='{form_data.username}' password='{form_data.password}'")
     print(f"Login attempt for: {form_data.username}") 
     user = get_user_by_email(db, form_data.username)
     print(f"User found: {bool(user)}")  # Логирование
@@ -44,9 +44,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         "user": UserResponse.model_validate(user)
     }
 
-# @router.get("/me", response_model=UserResponse)
-# async def get_current_user(
-#     db: Session = Depends(get_db),
-#     current_user: User = Depends(get_current_user)  # Реализуйте эту зависимость
-# ):
-#     return current_user
+@router.get("/me", response_model=CurrentUser)
+async def get_current_user_endpoint(
+    current_user: User = Depends(get_current_user)
+):
+    return CurrentUser(
+        id=current_user.id,
+        email=current_user.email,
+        username=current_user.username
+    )

@@ -4,9 +4,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
 
 class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
