@@ -7,6 +7,7 @@ import re
 import time
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
+import json
 
 class WBSeleniumParser(BaseParser):
     def __init__(self):
@@ -76,40 +77,80 @@ class WBSeleniumParser(BaseParser):
             return None
         
     def _extract_brand(self, soup):
+        """
+        Извлекает бренд из breadcrumbs (хлебных крошек) на странице Wildberries.
+        Это более надежный способ, так как бренд всегда присутствует в пути навигации.
+        """
         try:
-            # Вариант 1: Основное расположение бренда
-            brand_elem = soup.find('div', class_='seller-and-brand__item-name')
+            # Способ 1: Ищем breadcrumbs контейнер
+            breadcrumbs = soup.find('div', class_='breadcrumbs')
+            if not breadcrumbs:
+                # Способ 2: Альтернативные классы для breadcrumbs
+                breadcrumbs = soup.find('nav', {'aria-label': 'Хлебные крошки'})
+                if not breadcrumbs:
+                    breadcrumbs = soup.find('ol', class_='breadcrumb')
             
-            # Вариант 2: Альтернативное расположение (для некоторых карточек)
-            if not brand_elem:
-                brand_elem = soup.find('span', class_='product-card__brand')
-            
-            # Вариант 3: Поиск по data-атрибуту
-            if not brand_elem:
-                brand_elem = soup.find(attrs={"data-brand-name": True})
-            
-            # Вариант 4: Поиск в скрипте с JSON-данными
-            if not brand_elem:
-                script_content = soup.find('script', string=re.compile(r'"brand":'))
-                if script_content:
-                    match = re.search(r'"brand":"([^"]+)"', script_content.string)
-                    if match:
-                        return match.group(1)
-            
-            if brand_elem:
-                # Очистка текста от лишних символов
-                brand_text = brand_elem.get_text(strip=True)
+            if breadcrumbs:
+                # Ищем все ссылки в breadcrumbs
+                links = breadcrumbs.find_all('a')
                 
-                # Удаление возможных префиксов типа "Бренд:"
-                brand_text = re.sub(r'^Бренд[:]?\s*', '', brand_text, flags=re.IGNORECASE)
+                # Предпоследний элемент обычно содержит бренд
+                if len(links) >= 2:
+                    brand_link = links[-1]  # Предпоследняя ссылка
+                    brand_text = brand_link.get_text(strip=True)
+                    
+                    # Очищаем текст от лишних символов
+                    brand_text = re.sub(r'^Бренд[:]?\s*', '', brand_text, flags=re.IGNORECASE)
+                    
+                    if brand_text and brand_text != 'Главная' and not brand_text.isdigit():
+                        return brand_text
                 
-                return brand_text.strip() if brand_text else None
+                # Альтернативно: ищем span элементы (последний элемент может быть текстом)
+                spans = breadcrumbs.find_all('span')
+                for span in spans[-3:]:  # Проверяем последние 3 элемента
+                    span_text = span.get_text(strip=True)
+                    if (span_text and span_text != 'Главная' and 
+                        not span_text.isdigit() and len(span_text) > 2):
+                        return span_text
             
+            # Способ 3: Поиск в структурированных данных (JSON-LD)
+            script = soup.find('script', type='application/ld+json')
+            if script:
+                try:
+                    data = json.loads(script.string)
+                    if isinstance(data, list):
+                        data = data[0]
+                    
+                    # Проверяем различные возможные расположения бренда в JSON-LD
+                    brand = data.get('brand', {}).get('name') if isinstance(data.get('brand'), dict) else data.get('brand')
+                    if brand:
+                        return str(brand)
+                    
+                    # Альтернативные пути в JSON-LD
+                    if data.get('itemListElement'):
+                        for item in data['itemListElement']:
+                            if isinstance(item, dict) and item.get('item', {}).get('name'):
+                                potential_brand = item['item']['name']
+                                if potential_brand and potential_brand != 'Главная':
+                                    return potential_brand
+                                    
+                except (json.JSONDecodeError, AttributeError, IndexError):
+                    pass
+            
+            # Способ 4: Резервный поиск в заголовке страницы
+            title = soup.find('title')
+            if title:
+                title_text = title.get_text()
+                # Ищем бренд в заголовке (обычно формат: "Название товара - Бренд - Wildberries")
+                brand_match = re.search(r' - ([^ -]+) - Wildberries', title_text)
+                if brand_match:
+                    return brand_match.group(1)
             return None
+            
         except Exception as e:
             print(f"Brand extraction error: {e}")
             return None
-        
+    
     def _extract_rating(self, soup):
         try:
             # Вариант 1: Основное расположение рейтинга
