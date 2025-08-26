@@ -1,17 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './PriceModal.css';
 
-export function PriceModal({ isOpen, onClose, onConfirm, currentPrice }) {
+export function PriceModal({ isOpen, onClose, onConfirm, currentPrice, productName }) {
   const [targetPrice, setTargetPrice] = useState('');
+  const [customName, setCustomName] = useState('');
+
+  // Предзаполняем поле именем товара при открытии модалки
+  useEffect(() => {
+    if (isOpen && productName) {
+      setCustomName(productName);
+    }
+  }, [isOpen, productName]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const price = parseInt(targetPrice);
-    if (price && price > 0) {
-      onConfirm(price);
+    if (price && price > 0 && customName.trim()) {
+      onConfirm(price, customName.trim());
       setTargetPrice('');
+      setCustomName('');
       onClose();
     }
   };
@@ -20,7 +29,7 @@ export function PriceModal({ isOpen, onClose, onConfirm, currentPrice }) {
     <div className="modal-overlay">
       <div className="modal price-modal">
         <button className="close-btn" onClick={onClose}>×</button>
-        <h2>Уведомление о снижении цены</h2>
+        <h2>Настройка уведомления</h2>
         
         {currentPrice && (
           <p className="current-price">
@@ -29,6 +38,20 @@ export function PriceModal({ isOpen, onClose, onConfirm, currentPrice }) {
         )}
         
         <form onSubmit={handleSubmit}>
+          {/* Поле для имени товара */}
+          <div className="input-group">
+            <label htmlFor="customName">Имя для отображения:</label>
+            <input
+              type="text"
+              id="customName"
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+              placeholder="Введите название товара"
+              required
+            />
+          </div>
+
+          {/* Поле для целевой цены */}
           <div className="input-group">
             <label htmlFor="targetPrice">Целевая цена (рубли):</label>
             <input
@@ -52,7 +75,7 @@ export function PriceModal({ isOpen, onClose, onConfirm, currentPrice }) {
               Отмена
             </button>
             <button type="submit" className="confirm-btn">
-              Подтвердить
+              Сохранить
             </button>
           </div>
         </form>

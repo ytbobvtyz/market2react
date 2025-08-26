@@ -1,5 +1,5 @@
 .price-modal {
-  max-width: 400px;
+  max-width: 450px;
 }
 
 .current-price {
@@ -27,11 +27,16 @@
   font-size: 16px;
 }
 
+.input-group input[type="text"] {
+  margin-bottom: 10px;
+}
+
 .notification-info {
   text-align: center;
   margin-bottom: 20px;
   color: #666;
   font-size: 14px;
+  line-height: 1.4;
 }
 
 .modal-actions {
@@ -46,6 +51,7 @@
   border-radius: 4px;
   background: white;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .confirm-btn {
@@ -55,6 +61,7 @@
   background: #ff00d0;
   color: white;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .cancel-btn:hover {
@@ -62,5 +69,22 @@
 }
 
 .confirm-btn:hover {
-  background: #b300b3;
+  background: #b30092;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+  .price-modal {
+    margin: 20px;
+    max-width: none;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .cancel-btn,
+  .confirm-btn {
+    width: 100%;
+  }
 }

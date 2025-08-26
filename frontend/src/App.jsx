@@ -39,8 +39,9 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [parsingLoading, setParsingLoading] = useState(false);
-  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false); // Новое состояние для модалки цены
-  const [targetPrice, setTargetPrice] = useState(null); // Целевая цена
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [targetPrice, setTargetPrice] = useState(null);
+  const [customName, setCustomName] = useState('');
 
   useEffect(() => {
     setupAxiosInterceptors();
@@ -106,8 +107,9 @@ function App() {
     setIsPriceModalOpen(true);
   };
 
-  const handlePriceConfirm = async (price) => {
+const handlePriceConfirm = async (price, name) => {
     setTargetPrice(price);
+    setCustomName(name); // Сохраняем кастомное имя
     setParsingLoading(true);
     
     try {
@@ -126,7 +128,8 @@ function App() {
       const saveData = {
         query,
         results,
-        target_price: price // Добавляем целевую цену
+        target_price: price,
+        custom_name: name
       };
       
       // Сохраняем в базу данных через наш сервис
@@ -220,6 +223,7 @@ function App() {
         onClose={() => setIsPriceModalOpen(false)}
         onConfirm={handlePriceConfirm}
         currentPrice={product?.price}
+        productName={product?.name} 
       />
     </div>
   );

@@ -27,6 +27,7 @@ class ParsingResultCreate(BaseModel):
     query: str
     results: List[dict]  # Список товаров с парсинга
     target_price: Optional[int] = None
+    custom_name: Optional[str] = None
     
     @field_validator('results')
     @classmethod

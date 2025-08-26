@@ -77,7 +77,8 @@ def save_parsing_results(db: Session, parsing_data: ParsingResultCreate, user_id
     """
     saved_count = 0
     errors = []
-    print(parsing_data.query)
+    print(parsing_data)
+    print(parsing_data.target_price)
     for product in parsing_data.results:
         try:
             print(product)
