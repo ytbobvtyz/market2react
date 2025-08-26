@@ -12,18 +12,25 @@ router = APIRouter()
 async def save_parsing_results_endpoint(
     parsing_data: ParsingResultCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # Защищенный эндпоинт
+    current_user: User = Depends(get_current_user)
 ):
-    try:
-        result = save_parsing_results(db=db, parsing_data=parsing_data, user_id=current_user.id)
-        
+    """
+    Сохраняет результаты парсинга одного товара
+    """
+    result = save_parsing_results(
+        db=db, 
+        parsing_data=parsing_data, 
+        user_id=current_user.id
+    )
+    
+    if result["saved_count"] > 0:
         return {
-            "message": f"Успешно сохранено {result['saved_count']} из {result['total_products']} товаров",
+            "message": "Данные успешно сохранены",
+            "tracking_id": result.get("tracking_id"),
             "details": result
         }
-        
-    except Exception as e:
+    else:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error saving parsing results: {str(e)}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["errors"][0] if result["errors"] else "Ошибка при сохранении данных"
         )

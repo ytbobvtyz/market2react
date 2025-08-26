@@ -2,7 +2,6 @@ from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Optional, List, Any
 import uuid
-import json
 
 class TrackingBase(BaseModel):
     wb_item_id: int
@@ -28,7 +27,7 @@ class ParsingResultCreate(BaseModel):
     results: List[dict]  # Список товаров с парсинга
     target_price: Optional[int] = None
     custom_name: Optional[str] = None
-    
+
     @field_validator('results')
     @classmethod
     def validate_results(cls, v):
