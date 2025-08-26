@@ -55,7 +55,7 @@ function App() {
           authLogin(response.data);
         } catch (error) {
           console.error('Failed to load user', error);
-          localStorage.removeItem('access_token'); // Меняем на access_token
+          localStorage.removeItem('access_token');
         }
       };
       
@@ -64,7 +64,6 @@ function App() {
   }, [isAuthenticated, authLogin]);
 
   const handleLoginSuccess = ({ user, token }) => {
-    // Используем функцию setAuthToken вместо прямого сохранения
     setAuthToken(token);
     authLogin(user);
     setIsAuthModalOpen(false);
@@ -118,8 +117,6 @@ function App() {
       // Сохраняем в базу данных через наш сервис
       const saveResult = await parsingService.saveParsingResults(query, results);
       
-      // Открываем Wildberries
-      window.open(`https://www.wildberries.ru/catalog/${nmId}/detail.aspx`, '_blank');
       
       alert(`Данные сохранены! Сохранено товаров: ${saveResult.details.saved_count}`);
       
@@ -178,7 +175,7 @@ function App() {
                 className="save-request-btn"
                 disabled={parsingLoading} // Меняем условие disabled
               >
-                {parsingLoading ? 'Сохранение...' : 'Сохранить и открыть WB'}
+                {parsingLoading ? 'Сохранение...' : 'Сохранить запрос'}
               </button>
               
               <a 
@@ -187,7 +184,7 @@ function App() {
                 rel="noopener noreferrer"
                 className="wb-link"
               >
-                Только открыть Wildberries
+                Открыть на WB
               </a>
             </div>
           </div>

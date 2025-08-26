@@ -14,19 +14,20 @@ class WBSeleniumParser(BaseParser):
         chrome_options.add_argument("--headless")  # Режим без браузера
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        self.driver = get_driver()
-        self.wait = WebDriverWait(self.driver, 20)
+
         
     def parse(self, article: str) -> dict:
         """Основной метод парсинга через Selenium"""
         try:
+            self.driver = get_driver()
+            self.wait = WebDriverWait(self.driver, 15)
             self.driver.get(f"https://www.wildberries.ru/catalog/{article}/detail.aspx")
             # Ожидаем загрузки страницы
             self.wait.until(EC.presence_of_element_located((By.CLASS_NAME, "product-page")))
-            time.sleep(2)
+            time.sleep(1)
             # Получаем HTML страницы
             html = self.driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')           
+            soup = BeautifulSoup(html, 'html.parser')        
             product_data = {
                 'name': self._extract_name(soup),
                 'price': self._extract_price(soup),
@@ -173,3 +174,4 @@ class WBSeleniumParser(BaseParser):
             }
         except:
             return None
+
