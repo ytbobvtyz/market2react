@@ -1,8 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AuthContext } from './contexts/auth-context';
 import { UserMenu } from './components/UserMenu';
 import { AuthModal } from './components/AuthModal';
-import { PriceModal } from './components/PriceModal'; // Добавляем импорт
+import { PriceModal } from './components/PriceModal';
+import { TrackingHistory } from './pages/TrackingHistory';
 import { parsingService } from './api/parsingService';
 import { setAuthToken } from './api/apiService';
 import './App.css';
@@ -29,7 +32,7 @@ const setupAxiosInterceptors = () => {
   );
 };
 
-function App() {
+function MainApp() {
   const [nmId, setNmId] = useState('');
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -156,7 +159,12 @@ const handlePriceConfirm = async (price, name) => {
     <div className="app">
       <header className="app-header">
         <h1>WishBenefit</h1>
-        <UserMenu onLoginClick={() => setIsAuthModalOpen(true)} />
+        <div className="header-actions">
+          <Link to="/history" className="history-btn">
+            Мои запросы
+          </Link>
+          <UserMenu onLoginClick={() => setIsAuthModalOpen(true)} />
+        </div>
       </header>
 
       <div className="search-form">
@@ -226,6 +234,15 @@ const handlePriceConfirm = async (price, name) => {
         productName={product?.name} 
       />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainApp />} />
+      <Route path="/history" element={<TrackingHistory />} />
+    </Routes>
   );
 }
 

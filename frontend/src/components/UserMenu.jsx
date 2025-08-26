@@ -23,9 +23,7 @@ export function UserMenu() {
       {isAuthenticated ? (
         <>
           <span className="user-greeting">Привет, {user?.username || 'друг'}!</span>
-          <a href="/requests" className="menu-link">
-            <i className="icon-requests"></i> Мои запросы
-          </a>
+
           <button onClick={logout} className="logout-btn">
             <i className="icon-logout"></i> Выйти
           </button>
