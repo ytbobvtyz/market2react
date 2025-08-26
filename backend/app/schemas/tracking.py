@@ -26,11 +26,11 @@ class TrackingResponse(TrackingBase):
 class ParsingResultCreate(BaseModel):
     query: str
     results: List[dict]  # Список товаров с парсинга
-
+    target_price: Optional[int] = None
+    
     @field_validator('results')
     @classmethod
     def validate_results(cls, v):
-        # ЗАМЕНЯЕМ неправильную проверку
         if not isinstance(v, list):
             raise ValueError('Results must be a list')
         

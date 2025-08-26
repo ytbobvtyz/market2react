@@ -2,15 +2,16 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from './contexts/auth-context';
 import { UserMenu } from './components/UserMenu';
 import { AuthModal } from './components/AuthModal';
+import { PriceModal } from './components/PriceModal'; // Добавляем импорт
 import { parsingService } from './api/parsingService';
-import { setAuthToken } from './api/apiService'; // Добавляем импорт
+import { setAuthToken } from './api/apiService';
 import './App.css';
 import axios from 'axios';
 
 // Настройка интерцепторов axios
 const setupAxiosInterceptors = () => {
   axios.interceptors.request.use(config => {
-    const token = localStorage.getItem('access_token'); // Меняем на access_token
+    const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,8 +22,7 @@ const setupAxiosInterceptors = () => {
     response => response,
     error => {
       if (error.response?.status === 401) {
-        localStorage.removeItem('access_token'); // Меняем на access_token
-        // Можно добавить редирект или обновление состояния
+        localStorage.removeItem('access_token');
       }
       return Promise.reject(error);
     }
@@ -39,6 +39,8 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [parsingLoading, setParsingLoading] = useState(false);
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false); // Новое состояние для модалки цены
+  const [targetPrice, setTargetPrice] = useState(null); // Целевая цена
 
   useEffect(() => {
     setupAxiosInterceptors();
@@ -81,7 +83,6 @@ function App() {
     try {
       const { data } = await axios.get(`http://localhost:8000/products/${nmId}`);
       setProduct(data);
-      // Сохраняем данные в localStorage для последующего использования
       localStorage.setItem('searchData', JSON.stringify([data]));
       localStorage.setItem('query', nmId);
 
@@ -94,14 +95,21 @@ function App() {
     }
   };
 
-  const handleSaveRequest = async () => {
+  const handleSaveClick = () => {
     if (!isAuthenticated) {
       setSaveStatus('Для сохранения необходимо авторизоваться');
       setIsAuthModalOpen(true);
       return;
     }
+    
+    // Показываем модальное окно для ввода цены
+    setIsPriceModalOpen(true);
+  };
 
+  const handlePriceConfirm = async (price) => {
+    setTargetPrice(price);
     setParsingLoading(true);
+    
     try {
       // Получаем данные из localStorage
       const searchData = localStorage.getItem('searchData');
@@ -114,19 +122,24 @@ function App() {
 
       const results = JSON.parse(searchData);
       
+      // Добавляем целевую цену к данным для сохранения
+      const saveData = {
+        query,
+        results,
+        target_price: price // Добавляем целевую цену
+      };
+      
       // Сохраняем в базу данных через наш сервис
-      const saveResult = await parsingService.saveParsingResults(query, results);
+      const saveResult = await parsingService.saveParsingResults(saveData);
       
-      
-      alert(`Данные сохранены! Сохранено товаров: ${saveResult.details.saved_count}`);
+      alert(`Данные сохранены! Уведомление придёт на почту при достижении цены ${price} ₽`);
       
     } catch (error) {
       console.error('Error:', error);
       
-      // Если ошибка авторизации
       if (error.response?.status === 401) {
         alert('Сессия истекла. Пожалуйста, войдите снова.');
-        localStorage.removeItem('access_token'); // Меняем на access_token
+        localStorage.removeItem('access_token');
         window.location.reload();
       } else {
         alert(error.message || 'Ошибка при сохранении данных');
@@ -171,11 +184,11 @@ function App() {
             </div>
             <div className="product-actions">
               <button 
-                onClick={handleSaveRequest}
+                onClick={handleSaveClick} // Изменяем на handleSaveClick
                 className="save-request-btn"
-                disabled={parsingLoading} // Меняем условие disabled
+                disabled={parsingLoading}
               >
-                {parsingLoading ? 'Сохранение...' : 'Сохранить запрос'}
+                {parsingLoading ? 'Сохранение...' : 'Сохранить мой запрос'}
               </button>
               
               <a 
@@ -200,6 +213,14 @@ function App() {
           switchMode={() => setIsLoginMode(!isLoginMode)}
         />
       )}
+      
+      {/* Модальное окно для ввода цены */}
+      <PriceModal
+        isOpen={isPriceModalOpen}
+        onClose={() => setIsPriceModalOpen(false)}
+        onConfirm={handlePriceConfirm}
+        currentPrice={product?.price}
+      />
     </div>
   );
 }

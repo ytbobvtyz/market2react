@@ -77,11 +77,12 @@ def save_parsing_results(db: Session, parsing_data: ParsingResultCreate, user_id
     """
     saved_count = 0
     errors = []
-    
+    print(parsing_data.query)
     for product in parsing_data.results:
         try:
-            # Извлекаем данные из продукта (адаптируйте под вашу структуру данных)
-            wb_item_id = product.get('id') or product.get('article') or product.get('nm_id')
+            print(product)
+            # Извлекаем данные из продукта 
+            wb_item_id = parsing_data.query
             price = product.get('price') or product.get('salePriceU') or 0
             name = product.get('name') or product.get('title') or 'Unknown'
             rating = product.get('rating') or product.get('reviewRating') or 0

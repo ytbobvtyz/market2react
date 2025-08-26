@@ -3,20 +3,14 @@ import { API_SAVE_PARSING } from './config';
 
 export const parsingService = {
   // Сохранить результаты парсинга
-  saveParsingResults: async (query, results) => {
+  saveParsingResults: async (data) => {
     try {
-      // Проверяем есть ли токен
       const token = localStorage.getItem('access_token');
       if (!token) {
         throw new Error('Токен не найден. Пожалуйста, войдите снова.');
       }
 
-      // Используем общий экземпляр api, который уже добавляет Authorization header
-      const response = await api.post(API_SAVE_PARSING, {
-        query,
-        results
-      });
-      
+      const response = await api.post(API_SAVE_PARSING, data);
       return response.data;
     } catch (error) {
       console.error('Error saving parsing results:', error);

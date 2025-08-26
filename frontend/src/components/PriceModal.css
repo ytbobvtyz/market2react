@@ -1,0 +1,66 @@
+.price-modal {
+  max-width: 400px;
+}
+
+.current-price {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #666;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.notification-info {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background: #ff00d0;
+  color: white;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #f8f9fa;
+}
+
+.confirm-btn:hover {
+  background: #b300b3;
+}
