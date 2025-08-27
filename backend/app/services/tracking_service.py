@@ -46,7 +46,8 @@ def get_or_create_tracking(db: Session, user_id: int, wb_item_id: int,
         desired_price=tracking_data.desired_price,
         min_rating=None,
         min_comment=None,
-        is_active=tracking_data.is_active
+        is_active=tracking_data.is_active,
+        created_at=datetime.now(timezone.utc)
     )
     
     db.add(tracking)
@@ -136,10 +137,11 @@ def save_parsing_results(db: Session, parsing_data: ParsingResultCreate, user_id
             "total_products": 1
         }
 
-
-def get_user_trackings(db: Session, user_id: int):
-    """Получить все трекинги пользователя"""
-    return db.query(Tracking).filter(Tracking.user_id == user_id).all()
+def get_trackings_by_user(db: Session, user_id: int):
+    """
+    Получает все трекинги пользователя
+    """
+    return db.query(Tracking).filter(Tracking.user_id == user_id).order_by(Tracking.created_at.desc()).all()
 
 def get_tracking_price_history(db: Session, tracking_id: uuid.UUID, user_id: int):
     """Получить историю цен для трекинга"""

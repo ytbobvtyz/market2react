@@ -5,6 +5,7 @@ from ..models.user import User
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
+
 def create_user(db: Session, user_data):
     # Генерация соли и хеширование пароля с помощью bcrypt
     salt = bcrypt.gensalt()

@@ -36,6 +36,7 @@ class WBSeleniumParser(BaseParser):
                 'rating': self._extract_rating(soup),
                 'feedback_count': self._extract_feedback_count(soup),
             }
+            print(product_data)
             return product_data
         except Exception as e:
             if self.driver:

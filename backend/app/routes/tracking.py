@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.services.tracking_service import save_parsing_results
-from app.schemas.tracking import ParsingResultCreate
+from app.schemas.tracking import ParsingResultCreate, TrackingResponse
 from app.utils.auth import get_current_user
 from app.models.user import User
 
@@ -33,4 +33,22 @@ async def save_parsing_results_endpoint(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=result["errors"][0] if result["errors"] else "Ошибка при сохранении данных"
+        )
+    
+@router.get("/user-trackings/", response_model=list[TrackingResponse])
+async def get_user_trackings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Получить все трекинги текущего пользователя
+    """
+    try:
+        from app.services.tracking_service import get_trackings_by_user
+        trackings = get_trackings_by_user(db, current_user.id)
+        return trackings
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching user trackings: {str(e)}"
         )

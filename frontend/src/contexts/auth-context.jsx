@@ -28,14 +28,16 @@ const login = (userData, token) => {
   console.log('Context login:', { userData, token }); // Добавьте логирование
   setUser(userData);
   setToken(token); // Добавьте состояние токена в контекст
-  localStorage.setItem('authToken', token);
 };
 
   const logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
     setUser(null);
     setToken(null);
-    localStorage.removeItem('authToken');
+    window.location.href = '/';
   };
+
 
   return (
     <AuthContext.Provider

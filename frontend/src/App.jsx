@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { AuthContext } from './contexts/auth-context';
 import { UserMenu } from './components/UserMenu';
@@ -46,6 +46,8 @@ function MainApp() {
   const [targetPrice, setTargetPrice] = useState(null);
   const [customName, setCustomName] = useState('');
 
+  const navigate = useNavigate();
+  
   useEffect(() => {
     setupAxiosInterceptors();
     
@@ -73,6 +75,16 @@ function MainApp() {
     setAuthToken(token);
     authLogin(user);
     setIsAuthModalOpen(false);
+  };
+
+  const handleHistoryClick = () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      alert('Для просмотра истории необходимо авторизоваться');
+      setIsAuthModalOpen(true);
+    } else {
+      navigate('/history');
+    }
   };
 
   const handleSearch = async () => {
@@ -160,9 +172,9 @@ const handlePriceConfirm = async (price, name) => {
       <header className="app-header">
         <h1>WishBenefit</h1>
         <div className="header-actions">
-          <Link to="/history" className="history-btn">
+          <button onClick={handleHistoryClick} className="history-btn">
             Мои запросы
-          </Link>
+          </button>
           <UserMenu onLoginClick={() => setIsAuthModalOpen(true)} />
         </div>
       </header>

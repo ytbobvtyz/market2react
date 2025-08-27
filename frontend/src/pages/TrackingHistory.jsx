@@ -9,8 +9,7 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  TimeScale
+  Legend
 } from 'chart.js';
 import axios from 'axios';
 import './TrackingHistory.css';
@@ -23,8 +22,7 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  TimeScale
+  Legend
 );
 
 export function TrackingHistory() {
@@ -48,19 +46,38 @@ export function TrackingHistory() {
 
   const fetchUserTrackings = async () => {
     try {
+      setLoading(true);
+      setError('');
       const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        setError('Требуется авторизация');
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.get('http://localhost:8000/api/v1/user-trackings/', {
         headers: {
           Authorization: `Bearer ${token}`
-        }
+        },
+        timeout: 10000 // Таймаут 10 секунд
       });
+      
       setTrackings(response.data);
       if (response.data.length > 0) {
         setSelectedTracking(response.data[0]);
       }
     } catch (err) {
-      setError('Ошибка загрузки данных');
       console.error('Error fetching trackings:', err);
+      if (err.response?.status === 401) {
+        setError('Ошибка авторизации. Пожалуйста, войдите снова.');
+      } else if (err.response?.status === 404) {
+        setError('Эндпоинт не найден. Проверьте настройки сервера.');
+      } else if (err.code === 'NETWORK_ERROR') {
+        setError('Ошибка сети. Проверьте подключение к серверу.');
+      } else {
+        setError('Ошибка загрузки данных. Проверьте консоль для деталей.');
+      }
     } finally {
       setLoading(false);
     }
