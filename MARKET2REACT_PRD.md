@@ -125,7 +125,128 @@ CREATE TABLE price_history (
 - Конверсия в подписку: 5% от бесплатных пользователей.  
 - Среднее количество запросов на пользователя: 2.5 (цель — мотивировать на апгрейд).  
 
-## 6. Этапы разработки
+## 6. Структура проекта.
+backend
+.
+├── alembic
+│   ├── __pycache__
+│   │   └── env.cpython-310.pyc
+│   ├── versions
+│   │   ├── __pycache__
+│   │   │   └── a6c0ed7c96b7_init_models_fixed.cpython-310.pyc
+│   │   └── a6c0ed7c96b7_init_models_fixed.py
+│   ├── env.py
+│   ├── README
+│   └── script.py.mako
+├── app
+│   ├── __pycache__
+│   │   ├── __init__.cpython-310.pyc
+│   │   ├── config.cpython-310.pyc
+│   │   ├── database.cpython-310.pyc
+│   │   └── main.cpython-310.pyc
+│   ├── logs
+│   │   ├── app.log
+│   │   └── parser.log
+│   ├── models
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-310.pyc
+│   │   │   ├── price_history.cpython-310.pyc
+│   │   │   ├── relationships.cpython-310.pyc
+│   │   │   ├── tracking.cpython-310.pyc
+│   │   │   └── user.cpython-310.pyc
+│   │   ├── __init__.py
+│   │   ├── price_history.py
+│   │   ├── tracking.py
+│   │   └── user.py
+│   ├── routes
+│   │   ├── __pycache__
+│   │   │   ├── api.cpython-310.pyc
+│   │   │   ├── auth.cpython-310.pyc
+│   │   │   ├── tracking.cpython-310.pyc
+│   │   │   └── wb_routes.cpython-310.pyc
+│   │   ├── api.py
+│   │   ├── auth.py
+│   │   ├── tracking.py
+│   │   └── wb_routes.py
+│   ├── schemas
+│   │   ├── __pycache__
+│   │   │   ├── tracking.cpython-310.pyc
+│   │   │   └── user.cpython-310.pyc
+│   │   ├── tracking.py
+│   │   └── user.py
+│   ├── services
+│   │   ├── __pycache__
+│   │   │   ├── base_parser.cpython-310.pyc
+│   │   │   ├── db_service.cpython-310.pyc
+│   │   │   ├── parser_service.cpython-310.pyc
+│   │   │   ├── parser_services.cpython-310.pyc
+│   │   │   └── tracking_service.cpython-310.pyc
+│   │   ├── wb
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-310.pyc
+│   │   │   │   ├── api_parser.cpython-310.pyc
+│   │   │   │   └── selenium_parser.cpython-310.pyc
+│   │   │   ├── __init__.py
+│   │   │   ├── api_parser.py
+│   │   │   └── selenium_parser.py
+│   │   ├── base_parser.py
+│   │   ├── db_service.py
+│   │   ├── parser_service.py
+│   │   └── tracking_service.py
+│   ├── utils
+│   │   ├── __pycache__
+│   │   │   ├── auth.cpython-310.pyc
+│   │   │   ├── db_utils.cpython-310.pyc
+│   │   │   └── logger.cpython-310.pyc
+│   │   ├── auth.py
+│   │   └── logger.py
+│   ├── __init__.py
+│   ├── config.py
+│   ├── database.py
+│   └── main.py
+├── migrations
+├── .env
+├── alembic.ini
+└── test_parsers.py
+
+frontend
+.
+├── public
+│   └── vite.svg
+├── src
+│   ├── api
+│   │   ├── apiService.js
+│   │   ├── authService.js
+│   │   ├── config.js
+│   │   └── parsingService.js
+│   ├── assets
+│   │   └── react.svg
+│   ├── components
+│   │   ├── AuthModal.css
+│   │   ├── AuthModal.jsx
+│   │   ├── PriceModal.css
+│   │   ├── PriceModal.jsx
+│   │   ├── UserMenu.css
+│   │   └── UserMenu.jsx
+│   ├── contexts
+│   │   └── auth-context.jsx
+│   ├── pages
+│   │   ├── TrackingHistory.css
+│   │   └── TrackingHistory.jsx
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── .env
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+└── vite.config.js
+
+## 7. Этапы разработки
 [DONE] Разработать структуру проекта
 [DONE] Разработать парсеры API и selenium
 [DONE] Минимальная страница поиска на frontend

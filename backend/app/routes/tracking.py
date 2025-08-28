@@ -1,10 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
+from uuid import UUID
+
 from app.database import get_db
 from app.services.tracking_service import save_parsing_results
-from app.schemas.tracking import ParsingResultCreate, TrackingResponse
+from app.schemas.tracking import ParsingResultCreate, TrackingResponse, TrackingWithHistoryResponse
 from app.utils.auth import get_current_user
 from app.models.user import User
+from app.models.tracking import Tracking
+from app.models.price_history import PriceHistory
+
 
 router = APIRouter()
 
@@ -52,3 +58,37 @@ async def get_user_trackings(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching user trackings: {str(e)}"
         )
+    
+@router.get("/tracking/{tracking_id}/", response_model=TrackingWithHistoryResponse)
+async def get_tracking_with_history(
+    tracking_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Получить информацию о трекинге с историей цен
+    """
+    # Проверяем, что трекинг принадлежит текущему пользователю
+    tracking = db.query(Tracking).filter(
+        Tracking.id == tracking_id,
+        Tracking.user_id == current_user.id
+    ).first()
+
+    if not tracking:
+        raise HTTPException(status_code=404, detail="Трекинг не найден")
+
+    # Получаем историю цен для этого трекинга
+    price_history = db.query(PriceHistory).filter(
+        PriceHistory.tracking_id == tracking_id
+    ).order_by(PriceHistory.checked_at.desc()).all()
+
+    # Формируем ответ
+    return {
+        "id": tracking.id,
+        "wb_item_id": tracking.wb_item_id,
+        "custom_name": tracking.custom_name,
+        "desired_price": tracking.desired_price,
+        "is_active": tracking.is_active,
+        "created_at": tracking.created_at,
+        "price_history": price_history
+    }

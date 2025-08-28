@@ -1,7 +1,7 @@
 from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Optional, List, Any
-import uuid
+from pydantic.types import UUID
 
 class TrackingBase(BaseModel):
     wb_item_id: int
@@ -15,13 +15,13 @@ class TrackingCreate(TrackingBase):
     pass
 
 class TrackingResponse(TrackingBase):
-    id: uuid.UUID
+    id: UUID
     user_id: int
     created_at: datetime
     
     class Config:
         from_attributes = True
-
+        arbitrary_types_allowed = True
 class ParsingResultCreate(BaseModel):
     query: str
     results: List[dict]  # Список товаров с парсинга
@@ -40,3 +40,27 @@ class ParsingResultCreate(BaseModel):
                 raise ValueError('All items in results must be dictionaries')
         
         return v
+
+class PriceHistoryResponse(BaseModel):
+    id: UUID
+    price: float
+    rating: Optional[float] = None
+    comment_count: Optional[int] = None
+    checked_at: datetime
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
+
+class TrackingWithHistoryResponse(BaseModel):
+    id: UUID
+    wb_item_id: int
+    custom_name: Optional[str] = None
+    desired_price: Optional[float] = None
+    is_active: bool
+    created_at: datetime
+    price_history: List[PriceHistoryResponse]
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
