@@ -64,3 +64,11 @@ class TrackingWithHistoryResponse(BaseModel):
     class Config:
         from_attributes = True
         arbitrary_types_allowed = True
+
+class TrackingUpdate(BaseModel):
+    custom_name: Optional[str] = None
+    desired_price: Optional[float] = None
+    is_active: Optional[bool] = None
+
+    class Config:
+        from_attributes = True

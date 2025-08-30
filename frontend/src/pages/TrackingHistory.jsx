@@ -31,7 +31,10 @@ export function TrackingHistory() {
   const [priceHistory, setPriceHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+  const [editingTracking, setEditingTracking] = useState(null);
+  const [newName, setNewName] = useState('');
+  const [newPrice, setNewPrice] = useState('');
+
   const location = useLocation();
 
   useEffect(() => {
@@ -97,6 +100,89 @@ export function TrackingHistory() {
     }
   };
 
+  const handleDeleteTracking = async (trackingId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот трекинг?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.delete(`http://localhost:8000/api/v1/tracking/${trackingId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      // Обновляем список трекингов
+      setTrackings(prev => prev.filter(t => t.id !== trackingId));
+      
+      // Если удалили выбранный трекинг, сбрасываем выбор
+      if (selectedTracking && selectedTracking.id === trackingId) {
+        setSelectedTracking(null);
+        setPriceHistory([]);
+      }
+
+      alert('Трекинг успешно удален!');
+    } catch (err) {
+      console.error('Error deleting tracking:', err);
+      alert('Ошибка при удалении трекинга');
+    }
+  };
+
+  // Функция переименования трекинга
+  const handleRenameTracking = async (trackingId, newName, newPrice) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const updateData = {};
+      
+      if (newName) updateData.custom_name = newName;
+      if (newPrice) updateData.desired_price = parseFloat(newPrice);
+
+      const response = await axios.patch(
+        `http://localhost:8000/api/v1/tracking/${trackingId}/`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Обновляем список трекингов
+      setTrackings(prev => prev.map(t => 
+        t.id === trackingId ? response.data : t
+      ));
+
+      // Обновляем выбранный трекинг если он редактировался
+      if (selectedTracking && selectedTracking.id === trackingId) {
+        setSelectedTracking(response.data);
+      }
+
+      setEditingTracking(null);
+      setNewName('');
+      setNewPrice('');
+      alert('Трекинг успешно обновлен!');
+    } catch (err) {
+      console.error('Error updating tracking:', err);
+      alert('Ошибка при обновлении трекинга');
+    }
+  };
+
+  // Функция для начала редактирования
+  const startEditing = (tracking) => {
+    setEditingTracking(tracking.id);
+    setNewName(tracking.custom_name || '');
+    setNewPrice(tracking.desired_price || '');
+  };
+
+  // Функция отмены редактирования
+  const cancelEditing = () => {
+    setEditingTracking(null);
+    setNewName('');
+    setNewPrice('');
+  };
+  
   const prepareChartData = () => {
     if (!priceHistory.length) return null;
 
@@ -196,19 +282,48 @@ export function TrackingHistory() {
                 <div
                   key={tracking.id}
                   className={`tracking-item ${selectedTracking?.id === tracking.id ? 'active' : ''}`}
-                  onClick={() => setSelectedTracking(tracking)}
                 >
-                  <h3>{tracking.custom_name}</h3>
-                  <p className="wb-id">Артикул: {tracking.wb_item_id}</p>
-                  <p className="target-price">
-                    Цель: {tracking.desired_price ? `${tracking.desired_price} ₽` : 'не задана'}
-                  </p>
-                  <p className="status">
-                    Статус: {tracking.is_active ? 'Активен' : 'Неактивен'}
-                  </p>
-                  <p className="created-date">
-                    Добавлен: {new Date(tracking.created_at).toLocaleDateString('ru-RU')}
-                  </p>
+                  {/* Основная информация - кликабельна для выбора */}
+                  <div 
+                    className="tracking-info"
+                    onClick={() => setSelectedTracking(tracking)}
+                  >
+                    <h3>{tracking.custom_name}</h3>
+                    <p className="wb-id">Артикул: {tracking.wb_item_id}</p>
+                    <p className="target-price">
+                      Цель: {tracking.desired_price ? `${tracking.desired_price} ₽` : 'не задана'}
+                    </p>
+                    <p className="status">
+                      Статус: {tracking.is_active ? 'Активен' : 'Неактивен'}
+                    </p>
+                    <p className="created-date">
+                      Добавлен: {new Date(tracking.created_at).toLocaleDateString('ru-RU')}
+                    </p>
+                  </div>
+                  
+                  {/* Кнопки управления - справа от информации */}
+                  <div className="tracking-item-actions">
+                    <button 
+                      className="btn-rename"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Предотвращаем всплытие клика
+                        startEditing(tracking);
+                      }}
+                      title="Переименовать"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      className="btn-delete"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Предотвращаем всплытие клика
+                        handleDeleteTracking(tracking.id);
+                      }}
+                      title="Удалить"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -227,6 +342,46 @@ export function TrackingHistory() {
                 </div>
               </div>
 
+              {/* Форма редактирования */}
+              {editingTracking === selectedTracking.id && (
+                <div className="edit-form">
+                  <h3>Редактирование трекинга</h3>
+                  <div className="form-group">
+                    <label>Название товара:</label>
+                    <input
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="Введите новое название"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Желаемая цена:</label>
+                    <input
+                      type="number"
+                      value={newPrice}
+                      onChange={(e) => setNewPrice(e.target.value)}
+                      placeholder="Введите желаемую цену"
+                    />
+                  </div>
+                  <div className="form-buttons">
+                    <button 
+                      className="btn-save"
+                      onClick={() => handleRenameTracking(selectedTracking.id, newName, newPrice)}
+                    >
+                      Сохранить
+                    </button>
+                    <button 
+                      className="btn-cancel"
+                      onClick={cancelEditing}
+                    >
+                      Отмена
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* График */}
               {priceHistory.length > 0 ? (
                 <div className="chart-container">
                   <Line data={prepareChartData()} options={chartOptions} />
@@ -237,6 +392,7 @@ export function TrackingHistory() {
                 </div>
               )}
 
+              {/* История цен */}
               <div className="price-history">
                 <h3>История цен</h3>
                 <div className="history-table">

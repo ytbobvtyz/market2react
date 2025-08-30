@@ -25,7 +25,7 @@
 
 .tracking-content {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 400px 1fr; /* Увеличил ширину левой панели */
   gap: 30px;
   min-height: 600px;
 }
@@ -56,28 +56,44 @@
   gap: 15px;
 }
 
+/* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ЭЛЕМЕНТА ТРЕКИНГА С КНОПКАМИ */
 .tracking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   padding: 15px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: white;
+  gap: 15px;
 }
 
 .tracking-item:hover {
-  border-color: #007bff;
+  border-color: #e883d6;
   transform: translateY(-2px);
 }
 
 .tracking-item.active {
-  border-color: #007bff;
+  border-color: #ff00d0;
   background-color: #f8f9fa;
 }
 
-.tracking-item h3 {
+/* Кликабельная область с информацией */
+.tracking-info {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.tracking-info h3 {
   margin: 0 0 8px 0;
   color: #333;
   font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wb-id, .target-price, .status, .created-date {
@@ -86,11 +102,72 @@
   color: #666;
 }
 
+.wb-id {
+  font-family: monospace;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
 .target-price {
   color: #28a745;
   font-weight: 500;
 }
 
+.status {
+  font-style: italic;
+}
+
+.created-date {
+  color: #999;
+  font-size: 12px !important;
+}
+
+/* КНОПКИ УПРАВЛЕНИЯ - справа от информации */
+.tracking-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tracking-item-actions .btn-rename,
+.tracking-item-actions .btn-delete {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.tracking-item-actions .btn-rename {
+  background-color: #a3f4b6;
+  color: white;
+}
+
+.tracking-item-actions .btn-rename:hover {
+  background-color: #28a745;
+  transform: scale(1.05);
+}
+
+.tracking-item-actions .btn-delete {
+  background-color: #f5b5bc;
+  color: white;
+}
+
+.tracking-item-actions .btn-delete:hover {
+  background-color: #c82333;
+  transform: scale(1.05);
+}
+
+/* Правая панель - детали */
 .tracking-details {
   background: white;
   border-radius: 10px;
@@ -116,6 +193,7 @@
   font-size: 14px;
 }
 
+/* График */
 .chart-container {
   margin: 25px 0;
   height: 300px;
@@ -172,8 +250,81 @@
 }
 
 .rating {
-  color: #ffc107;
+  color: #ff00d0;
   font-weight: 500;
+}
+
+/* Форма редактирования */
+.edit-form {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px solid #e9ecef;
+}
+
+.edit-form h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ee00ff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-save, .btn-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-save {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-save:hover {
+  background-color: #218838;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
 }
 
 .loading {
@@ -197,7 +348,7 @@
   }
   
   .tracking-list {
-    max-height: 300px;
+    max-height: 400px;
   }
 }
 
@@ -210,5 +361,46 @@
   .tracking-stats {
     flex-direction: column;
     gap: 5px;
+  }
+  
+  .tracking-item {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .tracking-item-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+  
+  .tracking-item-actions .btn-rename,
+  .tracking-item-actions .btn-delete {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tracking-history-page {
+    padding: 15px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-save, .btn-cancel {
+    width: 100%;
   }
 }

@@ -10,9 +10,107 @@ from app.utils.auth import get_current_user
 from app.models.user import User
 from app.models.tracking import Tracking
 from app.models.price_history import PriceHistory
-
+from app.schemas.tracking import TrackingUpdate
 
 router = APIRouter()
+
+
+@router.get("/tracking/{tracking_id}/", response_model=TrackingWithHistoryResponse)
+async def get_tracking_with_history(
+    tracking_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Получить информацию о трекинге с историей цен
+    """
+    # Проверяем, что трекинг принадлежит текущему пользователю
+    tracking = db.query(Tracking).filter(
+        Tracking.id == tracking_id,
+        Tracking.user_id == current_user.id
+    ).first()
+
+    if not tracking:
+        raise HTTPException(status_code=404, detail="Трекинг не найден")
+
+    # Получаем историю цен для этого трекинга
+    price_history = db.query(PriceHistory).filter(
+        PriceHistory.tracking_id == tracking_id
+    ).order_by(PriceHistory.checked_at.desc()).all()
+
+    # Формируем ответ
+    return {
+        "id": tracking.id,
+        "wb_item_id": tracking.wb_item_id,
+        "custom_name": tracking.custom_name,
+        "desired_price": tracking.desired_price,
+        "is_active": tracking.is_active,
+        "created_at": tracking.created_at,
+        "price_history": price_history
+    }
+
+@router.delete("/tracking/{tracking_id}/", status_code=204)
+async def delete_tracking(
+    tracking_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Проверяем, что трекинг принадлежит текущему пользователю
+    tracking = db.query(Tracking).filter(
+        Tracking.id == tracking_id,
+        Tracking.user_id == current_user.id
+    ).first()
+
+    if not tracking:
+        raise HTTPException(status_code=404, detail="Трекинг не найден")
+
+    # Удаляем трекинг (каскадно удалит и историю цен)
+    db.delete(tracking)
+    db.commit()
+    
+    return None  # 204 No Content
+
+@router.patch("/tracking/{tracking_id}/", response_model=TrackingWithHistoryResponse)
+async def update_tracking(
+    tracking_id: UUID,
+    tracking_update: TrackingUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Обновить трекинг (название, желаемую цену, статус)
+    """
+    # Проверяем, что трекинг принадлежит текущему пользователю
+    tracking = db.query(Tracking).filter(
+        Tracking.id == tracking_id,
+        Tracking.user_id == current_user.id
+    ).first()
+
+    if not tracking:
+        raise HTTPException(status_code=404, detail="Трекинг не найден")
+
+    # Обновляем только переданные поля
+    update_data = tracking_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(tracking, field, value)
+
+    db.commit()
+    db.refresh(tracking)
+
+    # Получаем обновленную историю цен
+    price_history = db.query(PriceHistory).filter(
+        PriceHistory.tracking_id == tracking_id
+    ).order_by(PriceHistory.checked_at.desc()).all()
+
+    return {
+        "id": tracking.id,
+        "wb_item_id": tracking.wb_item_id,
+        "custom_name": tracking.custom_name,
+        "desired_price": tracking.desired_price,
+        "is_active": tracking.is_active,
+        "created_at": tracking.created_at,
+        "price_history": price_history
+    }
 
 @router.post("/save-parsing-results/", status_code=status.HTTP_201_CREATED)
 async def save_parsing_results_endpoint(
@@ -59,36 +157,3 @@ async def get_user_trackings(
             detail=f"Error fetching user trackings: {str(e)}"
         )
     
-@router.get("/tracking/{tracking_id}/", response_model=TrackingWithHistoryResponse)
-async def get_tracking_with_history(
-    tracking_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Получить информацию о трекинге с историей цен
-    """
-    # Проверяем, что трекинг принадлежит текущему пользователю
-    tracking = db.query(Tracking).filter(
-        Tracking.id == tracking_id,
-        Tracking.user_id == current_user.id
-    ).first()
-
-    if not tracking:
-        raise HTTPException(status_code=404, detail="Трекинг не найден")
-
-    # Получаем историю цен для этого трекинга
-    price_history = db.query(PriceHistory).filter(
-        PriceHistory.tracking_id == tracking_id
-    ).order_by(PriceHistory.checked_at.desc()).all()
-
-    # Формируем ответ
-    return {
-        "id": tracking.id,
-        "wb_item_id": tracking.wb_item_id,
-        "custom_name": tracking.custom_name,
-        "desired_price": tracking.desired_price,
-        "is_active": tracking.is_active,
-        "created_at": tracking.created_at,
-        "price_history": price_history
-    }

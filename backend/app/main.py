@@ -31,6 +31,9 @@ app.include_router(wb_router)
 app.include_router(auth_router)
 app.include_router(tracking_router, prefix="/api/v1", tags=["tracking"])
 
+
+
+
 @app.get("/")
 def read_root():
     return {"message": "Market2React API"}
