@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -10,7 +10,6 @@ class UserCreate(BaseModel):
     subscription_tier: Optional[str] = None
 
     @field_validator('password')
-    @classmethod
     def validate_password(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters')
@@ -23,17 +22,13 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     username: str
-    email: str
+    email: EmailStr
     telegram_chat_id: Optional[str] = None
     subscription_tier: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    class Config:
-        from_attributes = True  # Заменяет orm_mode в Pydantic v2
 
-    @field_validator('created_at', mode='before')
-    def format_datetime(cls, value):
-        return value if value else None
+    model_config = ConfigDict(from_attributes=True)
 
 class CurrentUser(BaseModel):
     id: int

@@ -10,20 +10,33 @@ from ..models.user import User
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register/", response_model=UserResponse)
 async def register(user: UserCreate, db: Session = Depends(get_db)):
     try:
+        existing_user = get_user_by_email(db, user.email)
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Пользователь с таким email уже существует"
+            )
+        
         db_user = create_user(db, user)
-        return {
-            "id": db_user.id,
-            "username": db_user.username,
-            "email": db_user.email,
-            "created_at": db_user.created_at.isoformat(),  # Явное преобразование
-            "updated_at": db_user.updated_at.isoformat()   # Явное преобразование
-        }
+        return db_user  # ← Просто возвращаем объект, Pydantic сам сериализует
+    except ValueError as e:
+        # Ловим ошибки валидации пароля
+        raise HTTPException(
+            status_code=422,
+            detail=str(e)  # "Пароль должен содержать минимум 8 символов" и т.д.
+        )
+    except HTTPException:
+        # Пробрасываем уже созданные HTTPException
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        # Ловим все остальные ошибки
+        raise HTTPException(
+            status_code=500,
+            detail="Внутренняя ошибка сервера"
+        )
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     print(f"Login attempt for: {form_data.username}") 

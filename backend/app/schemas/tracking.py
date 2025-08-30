@@ -22,6 +22,7 @@ class TrackingResponse(TrackingBase):
     class Config:
         from_attributes = True
         arbitrary_types_allowed = True
+        
 class ParsingResultCreate(BaseModel):
     query: str
     results: List[dict]  # Список товаров с парсинга
