@@ -1,9 +1,16 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 from typing import List, Dict, Any
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
+from dotenv import load_dotenv
+import os
+
+# Загружаем .env файл из корня backend
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path)
 
 class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
@@ -11,12 +18,12 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
     # Настройки БД
-    DB_NAME: str
-    DB_USER: str
-    DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: str
-    SECRET_KEY: str
+    DB_NAME: str = Field(..., env="DB_NAME")
+    DB_USER: str = Field(..., env="DB_USER")
+    DB_PASSWORD: str = Field(..., env="DB_PASSWORD")
+    DB_HOST: str = Field(..., env="DB_HOST")
+    DB_PORT: str = Field(..., env="DB_PORT")
+    SECRET_KEY: str = Field(..., env="SECRET_KEY")
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -30,8 +37,8 @@ class Settings(BaseSettings):
     # SMTP настройки
     SMTP_SERVER: str = "smtp.yandex.ru"
     SMTP_PORT: int = 465
-    SMTP_USERNAME: str = "ytbob@yandex.ru"
-    SMTP_PASSWORD: str = "iutnyuocqrnqyxiw"
+    SMTP_USERNAME: str = Field(..., env="SMTP_USERNAME")
+    SMTP_PASSWORD: str = Field(..., env="SMTP_PASSWORD")
     
     # Redis настройки (опционально)
     # REDIS_HOST: str = "localhost"
@@ -41,7 +48,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = 'utf-8'
-        extra = 'ignore'
+        extra = 'allow'
 
 # Инициализация настроек
 settings = Settings()

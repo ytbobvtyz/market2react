@@ -17,3 +17,34 @@ http://localhost:8000/docs
 Токены: 
 curl -X GET "http://localhost:8000/api/v1/tracking/1/" \
      -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+
+
+# Проверить статус службы
+sudo systemctl status market2react
+
+# Посмотреть логи в реальном времени
+sudo journalctl -u market2react -f
+
+# Проверить работающие процессы
+ps aux | grep gunicorn
+
+# Проверить использование памяти
+top -p $(pgrep gunicorn)
+
+sudo systemctl start market2react
+sudo systemctl enable market2react
+sudo systemctl status market2react
+sudo systemctl stop market2react
+
+
+Деплой на сервер:
+cd /var/www/market2react
+git pull origin main  # или имя вашей ветки
+cd backend
+source venv/bin/activate
+pip install -r requirements.txt  # Если добавились новые зависимости
+cd ../frontend
+npm install
+npm run build
+sudo systemctl restart yourproject
