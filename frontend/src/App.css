@@ -1,3 +1,24 @@
+/* Жёсткое исправление для растягивания */
+body, html, #root {
+  height: 100%;
+  width: 100%;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+}
+
+.main-content-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 2rem;
+}
+
+
 /* Reset и базовые стили */
 * {
   margin: 0;
