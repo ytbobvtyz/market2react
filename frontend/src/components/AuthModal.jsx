@@ -7,10 +7,13 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    username: ''
+    username: '',
+    verificationCode: ''
   });
-  const [errors, setErrors] = useState({}); // Меняем на объект для множественных ошибок
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,128 +23,146 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
     });
     
     // Очищаем ошибку для этого поля при изменении
-    if (errors[name] || errors.general) {
+    if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[name];
-        delete newErrors.general;
         return newErrors;
       });
+    }
+  };
+
+  const handleSendVerification = async () => {
+    if (!formData.email) {
+      setErrors({ email: 'Введите email' });
+      return;
+    }
+
+    setVerificationLoading(true);
+    setErrors({});
+
+    try {
+      await axios.post('http://localhost:8000/auth/send-verification-code', {
+        email: formData.email
+      });
+
+      setVerificationSent(true);
+      alert('Код подтверждения отправлен на ваш email!');
+
+    } catch (error) {
+      console.error('Verification error:', error);
+      setErrors({ 
+        email: error.response?.data?.detail || 'Ошибка отправки кода' 
+      });
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const params = new URLSearchParams();
+      params.append('username', formData.email);
+      params.append('password', formData.password);
+
+      const response = await axios.post(
+        'http://localhost:8000/auth/login',
+        params.toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+
+      setAuthToken(response.data.access_token);
+      onLogin({
+        user: response.data.user,
+        token: response.data.access_token
+      });
+      onClose();
+
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error.response?.status === 401) {
+        setErrors({ general: 'Неверный email или пароль' });
+      } else {
+        setErrors({ 
+          general: error.response?.data?.detail || 'Ошибка входа' 
+        });
+      }
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      // Сначала регистрируем
+      const response = await axios.post(
+        'http://localhost:8000/auth/register-with-verification',
+        {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          verification_code: formData.verificationCode
+        }, 
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Затем автоматически логинимся
+      const loginResponse = await axios.post(
+        'http://localhost:8000/auth/login',
+        new URLSearchParams({
+          username: formData.email,
+          password: formData.password
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+      
+      setAuthToken(loginResponse.data.access_token);
+      onLogin({
+        user: loginResponse.data.user,
+        token: loginResponse.data.access_token
+      });
+      onClose();
+
+    } catch (error) {
+      console.error('Register error:', error);
+      if (error.response?.status === 400) {
+        setErrors({ 
+          general: error.response.data.detail || 'Ошибка регистрации' 
+        });
+      } else {
+        setErrors({ 
+          general: 'Ошибка регистрации. Проверьте введенные данные.' 
+        });
+      }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrors({}); // Очищаем все ошибки
+    setErrors({});
 
     try {
-      let response;
-      
       if (isLoginMode) {
-        // Логин
-        const params = new URLSearchParams();
-        params.append('username', formData.email);
-        params.append('password', formData.password);
-
-        response = await axios.post(
-          'http://localhost:8000/auth/login',
-          params.toString(),
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          }
-        );
+        await handleLogin();
       } else {
-        // Регистрация
-        response = await axios.post(
-          'http://localhost:8000/auth/register',
-          {
-            email: formData.email,
-            password: formData.password,
-            username: formData.username
-          }, 
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await handleRegister();
       }
-
-      // Обрабатываем успешный ответ
-      if (isLoginMode) {
-        setAuthToken(response.data.access_token);
-        onLogin({
-          user: response.data.user,
-          token: response.data.access_token
-        });
-      } else {
-        // После регистрации автоматически логинимся
-        const loginResponse = await axios.post(
-          'http://localhost:8000/auth/login',
-          new URLSearchParams({
-            username: formData.email,
-            password: formData.password
-          }),
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          }
-        );
-        
-        setAuthToken(loginResponse.data.access_token);
-        onLogin({
-          user: loginResponse.data.user,
-          token: loginResponse.data.access_token
-        });
-      }
-      
-      onClose();
-      
-    } catch (err) {
-      console.error('Auth error:', err);
-      
-      // Обработка разных типов ошибок
-      if (err.response?.status === 422) {
-        // Ошибки валидации от Pydantic
-        const errorDetail = err.response.data.detail;
-        
-        if (typeof errorDetail === 'string') {
-          // Одна ошибка (например, для пароля)
-          setErrors({ password: errorDetail });
-        } else if (Array.isArray(errorDetail)) {
-          // Несколько ошибок валидации
-          const validationErrors = {};
-          errorDetail.forEach(error => {
-            const field = error.loc[error.loc.length - 1]; // Берем последний элемент loc
-            validationErrors[field] = error.msg;
-          });
-          setErrors(validationErrors);
-        }
-        
-      } else if (err.response?.status === 400) {
-        // Пользователь уже существует или другие бизнес-ошибки
-        setErrors({ general: err.response.data.detail });
-        
-      } else if (err.response?.status === 401) {
-        // Неверные учетные данные
-        setErrors({ general: 'Неверный email или пароль' });
-        
-      } else if (err.code === 'NETWORK_ERROR') {
-        // Проблемы с сетью
-        setErrors({ general: 'Ошибка сети. Проверьте подключение' });
-        
-      } else {
-        // Любая другая ошибка
-        setErrors({ 
-          general: err.response?.data?.detail || 
-                  err.message || 
-                  'Произошла ошибка. Проверьте введенные данные' 
-        });
-      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      setErrors({ 
+        general: 'Произошла ошибка. Попробуйте еще раз.' 
+      });
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +174,6 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
         <button className="close-btn" onClick={onClose}>×</button>
         <h2>{isLoginMode ? 'Вход' : 'Регистрация'}</h2>
         
-        {/* Общая ошибка */}
         {errors.general && (
           <div className="error general-error">
             {errors.general}
@@ -187,12 +207,42 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
               value={formData.email}
               onChange={handleChange}
               required
+              disabled={verificationSent && !isLoginMode}
               className={errors.email ? 'error-input' : ''}
             />
             {errors.email && (
               <span className="error-text">{errors.email}</span>
             )}
+            
+            {!isLoginMode && !verificationSent && (
+              <button
+                type="button"
+                onClick={handleSendVerification}
+                disabled={verificationLoading}
+                className="verify-btn"
+              >
+                {verificationLoading ? 'Отправка...' : 'Отправить код'}
+              </button>
+            )}
           </div>
+
+          {!isLoginMode && verificationSent && (
+            <div className="input-group">
+              <input
+                type="text"
+                name="verificationCode"
+                placeholder="Код подтверждения из email"
+                value={formData.verificationCode}
+                onChange={handleChange}
+                required
+                maxLength={6}
+                className={errors.verificationCode ? 'error-input' : ''}
+              />
+              <div className="code-hint">
+                Код отправлен на {formData.email}
+              </div>
+            </div>
+          )}
           
           <div className="input-group">
             <input
@@ -209,7 +259,6 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
               <span className="error-text">{errors.password}</span>
             )}
             
-            {/* Подсказки для пароля при регистрации */}
             {!isLoginMode && (
               <div className="password-hints">
                 <p>Пароль должен содержать:</p>
@@ -222,10 +271,10 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
               </div>
             )}
           </div>
-          
+
           <button 
             type="submit" 
-            disabled={isLoading}
+            disabled={isLoading || (!isLoginMode && !verificationSent)}
             className={`submit-btn ${isLoading ? 'loading' : ''}`}
           >
             {isLoading ? (

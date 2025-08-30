@@ -170,7 +170,7 @@ const handlePriceConfirm = async (price, name) => {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>WishBenefit</h1>
+        <h1>  WishBenefit  </h1>
         <div className="header-actions">
           <button onClick={handleHistoryClick} className="history-btn">
             Мои запросы

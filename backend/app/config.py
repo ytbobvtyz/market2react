@@ -22,10 +22,22 @@ class Settings(BaseSettings):
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 300
-    # Новые настройки для Selenium
+    # настройки для Selenium
     SELENIUM_HEADLESS: bool = True
     SELENIUM_TIMEOUT: int = 15
     SELENIUM_BINARY_LOCATION: str = "/usr/bin/google-chrome"
+
+    # SMTP настройки
+    SMTP_SERVER: str = "smtp.yandex.ru"
+    SMTP_PORT: int = 465
+    SMTP_USERNAME: str = "ytbob@yandex.ru"
+    SMTP_PASSWORD: str = "iutnyuocqrnqyxiw"
+    
+    # Redis настройки (опционально)
+    # REDIS_HOST: str = "localhost"
+    # REDIS_PORT: int = 6379
+    # REDIS_PASSWORD: str = ""
+
     class Config:
         env_file = ".env"
         env_file_encoding = 'utf-8'

@@ -44,7 +44,7 @@
 .modal button[type="submit"] {
   width: 100%;
   padding: 10px;
-  background: #4CAF50;
+  background: #9e128b;
   color: white;
   border: none;
   cursor: pointer;
@@ -168,4 +168,43 @@ button.loading {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.email-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.email-input-group input {
+  flex: 1;
+}
+
+.verify-btn {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #8b5cf6 0%, #c4b5fd 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  transform: translateY(-1px);
+}
+
+.verify-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.code-hint {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  font-style: italic;
 }

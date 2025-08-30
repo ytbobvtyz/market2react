@@ -37,3 +37,19 @@ class CurrentUser(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+
+class EmailVerificationVerify(BaseModel):
+    email: EmailStr
+    code: str
+
+class UserCreateWithVerification(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    verification_code: str
+    telegram_chat_id: Optional[str] = None
+    subscription_tier: Optional[str] = None
