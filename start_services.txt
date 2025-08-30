@@ -47,4 +47,4 @@ pip install -r requirements.txt  # Если добавились новые за
 cd ../frontend
 npm install
 npm run build
-sudo systemctl restart yourproject
+sudo systemctl restart market2react

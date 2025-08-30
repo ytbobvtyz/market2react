@@ -5,12 +5,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
-from dotenv import load_dotenv
 import os
-
-# Загружаем .env файл из корня backend
-env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
-load_dotenv(env_path)
 
 class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
@@ -46,7 +41,7 @@ class Settings(BaseSettings):
     # REDIS_PASSWORD: str = ""
 
     class Config:
-        env_file = ".env"
+        env_file = os.path.join(os.path.dirname(__file__), '..', '..', '.env') 
         env_file_encoding = 'utf-8'
         extra = 'allow'
 
