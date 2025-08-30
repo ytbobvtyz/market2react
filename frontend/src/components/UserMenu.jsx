@@ -25,7 +25,7 @@ export function UserMenu() {
           <span className="user-greeting">Привет, {user?.username || 'друг'}!</span>
 
           <button onClick={logout} className="logout-btn">
-            <i className="icon-logout"></i> Выйти
+             Выйти
           </button>
         </>
       ) : (
