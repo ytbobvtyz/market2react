@@ -4,7 +4,7 @@ ssh неищи@147.45.102.68
 
 sudo lsof -i :8000
 sudo kill -9 <PID> 
-
+sudo ss -tulpn | grep :8000
 
 Работа с пакетами backend
 pip install --upgrade pip
@@ -39,8 +39,8 @@ sudo systemctl stop market2react
 
 
 Деплой на сервер:
-cd /var/www/market2react
-git pull origin main  # или имя вашей ветки
+cd /var/www/market2react/market2react
+git pull origin main
 cd backend
 source venv/bin/activate
 pip install -r requirements.txt  # Если добавились новые зависимости
@@ -48,3 +48,4 @@ cd ../frontend
 npm install
 npm run build
 sudo systemctl restart mar
+

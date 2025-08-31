@@ -21,10 +21,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://wblist.ru",
-        "https://wblist.ru", 
-        "http://localhost:5173",
-        "http://localhost:8000"
+    "http://localhost:3000",          # dev фронтенд
+    "http://147.45.102.68",           # IP сервера
+    "https://wblist.ru",              # продакшен домен
         ],
     allow_credentials=True,
     allow_methods=["*"],
