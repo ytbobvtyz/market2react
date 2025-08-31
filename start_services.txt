@@ -56,7 +56,7 @@ sudo journalctl -u market2react.service -n 50 --no-pager
 Деплой на сервер:
 cd /var/www/market2react/market2react
 git pull origin main
-cd backend
+
 source venv/bin/activate
 pip install -r requirements.txt  # Если добавились новые зависимости
 cd ../frontend
@@ -82,7 +82,7 @@ sudo systemctl status nginx
 
 # Посмотрим логи Nginx
 sudo tail -f /var/log/nginx/error.log
-
+sudo tail -f /var/log/nginx/access.log
 
 Пересборка фронтенд
 cd /var/www/market2react/market2react/frontend
