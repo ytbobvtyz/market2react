@@ -35,27 +35,27 @@ def send_verification_email(email: str, code: str) -> bool:
     """
     try:
         # Формируем письмо
-        msg = MIMEText(
-            f"""Добро пожаловать в WishBenefit!\n\n
-            Ваш код подтверждения: {code}\n\n
-            Код действителен в течение 10 минут.\n
-            Если вы не запрашивали этот код, проигнорируйте это письмо.\n\n
-            С уважением,\nКоманда WishBenefit"""
-        )
-        msg["Subject"] = "Код подтверждения для WishBenefit"
-        msg["From"] = SMTP_USERNAME
-        msg["To"] = email
+        # msg = MIMEText(
+        #     f"""Добро пожаловать в WishBenefit!\n\n
+        #     Ваш код подтверждения: {code}\n\n
+        #     Код действителен в течение 10 минут.\n
+        #     Если вы не запрашивали этот код, проигнорируйте это письмо.\n\n
+        #     С уважением,\nКоманда WishBenefit"""
+        # )
+        # msg["Subject"] = "Код подтверждения для WishBenefit"
+        # msg["From"] = SMTP_USERNAME
+        # msg["To"] = email
 
-        # Отправка через SMTP
-        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.send_message(msg)
+        # # Отправка через SMTP
+        # with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+        #     server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        #     server.send_message(msg)
         
-        # Сохраняем код (временное решение)
-        verification_codes[email] = {
-            'code': code,
-            'expires_at': datetime.now() + timedelta(minutes=10)
-        }
+        # # Сохраняем код (временное решение)
+        # verification_codes[email] = {
+        #     'code': code,
+        #     'expires_at': datetime.now() + timedelta(minutes=10)
+        # }
         
         return True
         

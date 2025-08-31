@@ -32,11 +32,26 @@ ps aux | grep gunicorn
 # Проверить использование памяти
 top -p $(pgrep gunicorn)
 
+
+Редактирование gunicorn
+
+sudo nano /etc/systemd/system/market2react.service
+# Перезагрузите демон systemd
+sudo systemctl daemon-reload
+sudo systemctl restart market2react
+
 sudo systemctl start market2react
 sudo systemctl enable market2react
 sudo systemctl status market2react
 sudo systemctl stop market2react
 
+Логи gunicorn
+
+# Смотрим логи в реальном времени
+sudo journalctl -u market2react.service -f
+
+# Или последние ошибки
+sudo journalctl -u market2react.service -n 50 --no-pager
 
 Деплой на сервер:
 cd /var/www/market2react/market2react
@@ -48,4 +63,34 @@ cd ../frontend
 npm install
 npm run build
 sudo systemctl restart mar
+
+
+# Посмотреть последние записи
+sudo journalctl -u market2react.service -n 50 --no-pager
+
+# Следить за логами в реальном времени
+sudo journalctl -u market2react.service -f
+
+# Посмотреть логи с момента последней загрузки
+sudo journalctl -u market2react.service -b --no-pager
+
+# Посмотреть логи за конкретную дату
+sudo journalctl -u market2react.service --since "2025-08-31 00:00:00"
+
+# Проверим статус Nginx
+sudo systemctl status nginx
+
+# Посмотрим логи Nginx
+sudo tail -f /var/log/nginx/error.log
+
+
+Пересборка фронтенд
+cd /var/www/market2react/market2react/frontend
+rm -rf dist node_modules/.vite
+npm run build
+
+Редактирование конфига nginx
+sudo nano /etc/nginx/sites-enabled/market2react
+sudo nginx -t
+sudo systemctl reload nginx
 
