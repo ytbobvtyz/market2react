@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { setAuthToken } from '../api/apiService';
-import axios from 'axios';
+import { api } from '../api/apiService'; // Импортируем настроенный api
 import './AuthModal.css';
 
 export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
@@ -42,7 +41,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
     setErrors({});
 
     try {
-      await axios.post('http://localhost:8000/auth/send-verification-code', {
+      await api.post('/auth/send-verification-code', {
         email: formData.email
       });
 
@@ -65,8 +64,8 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
       params.append('username', formData.email);
       params.append('password', formData.password);
 
-      const response = await axios.post(
-        'http://localhost:8000/auth/login',
+      const response = await api.post(
+        '/auth/login',
         params.toString(),
         {
           headers: {
@@ -75,7 +74,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
         }
       );
 
-      setAuthToken(response.data.access_token);
+      localStorage.setItem('access_token', response.data.access_token); // Сохраняем токен
       onLogin({
         user: response.data.user,
         token: response.data.access_token
@@ -97,24 +96,19 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
   const handleRegister = async () => {
     try {
       // Сначала регистрируем
-      const response = await axios.post(
-        'http://localhost:8000/auth/register-with-verification',
+      const response = await api.post(
+        '/auth/register-with-verification',
         {
           username: formData.username,
           email: formData.email,
           password: formData.password,
           verification_code: formData.verificationCode
-        }, 
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
         }
       );
 
       // Затем автоматически логинимся
-      const loginResponse = await axios.post(
-        'http://localhost:8000/auth/login',
+      const loginResponse = await api.post(
+        '/auth/login',
         new URLSearchParams({
           username: formData.email,
           password: formData.password
@@ -126,7 +120,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
         }
       );
       
-      setAuthToken(loginResponse.data.access_token);
+      localStorage.setItem('access_token', loginResponse.data.access_token); // Сохраняем токен
       onLogin({
         user: loginResponse.data.user,
         token: loginResponse.data.access_token

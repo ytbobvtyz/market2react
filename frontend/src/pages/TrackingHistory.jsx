@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import axios from 'axios';
+import { api } from '../api/apiService'; // Импортируем настроенный api
 import './TrackingHistory.css';
 
 // Регистрируем компоненты ChartJS
@@ -59,10 +59,7 @@ export function TrackingHistory() {
         return;
       }
 
-      const response = await axios.get('http://localhost:8000/api/v1/user-trackings/', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
+      const response = await api.get('/api/v1/user-trackings/', {
         timeout: 10000 // Таймаут 10 секунд
       });
       
@@ -88,12 +85,7 @@ export function TrackingHistory() {
 
   const fetchPriceHistory = async (trackingId) => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await axios.get(`http://localhost:8000/api/v1/tracking/${trackingId}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.get(`/api/v1/tracking/${trackingId}/`);
       setPriceHistory(response.data.price_history || []);
     } catch (err) {
       console.error('Error fetching price history:', err);
@@ -106,12 +98,7 @@ export function TrackingHistory() {
     }
 
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.delete(`http://localhost:8000/api/v1/tracking/${trackingId}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await api.delete(`/api/v1/tracking/${trackingId}/`);
 
       // Обновляем список трекингов
       setTrackings(prev => prev.filter(t => t.id !== trackingId));
@@ -132,21 +119,14 @@ export function TrackingHistory() {
   // Функция переименования трекинга
   const handleRenameTracking = async (trackingId, newName, newPrice) => {
     try {
-      const token = localStorage.getItem('access_token');
       const updateData = {};
       
       if (newName) updateData.custom_name = newName;
       if (newPrice) updateData.desired_price = parseFloat(newPrice);
 
-      const response = await axios.patch(
-        `http://localhost:8000/api/v1/tracking/${trackingId}/`,
-        updateData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
+      const response = await api.patch(
+        `/api/v1/tracking/${trackingId}/`,
+        updateData
       );
 
       // Обновляем список трекингов

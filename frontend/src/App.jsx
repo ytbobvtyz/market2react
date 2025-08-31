@@ -9,11 +9,11 @@ import { TrackingHistory } from './pages/TrackingHistory';
 import { parsingService } from './api/parsingService';
 import { setAuthToken } from './api/apiService';
 import './App.css';
-import axios from 'axios';
+import { api } from './api/apiService';
 
 // Настройка интерцепторов axios
 const setupAxiosInterceptors = () => {
-  axios.interceptors.request.use(config => {
+  api.interceptors.request.use(config => {
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -21,7 +21,7 @@ const setupAxiosInterceptors = () => {
     return config;
   });
 
-  axios.interceptors.response.use(
+  api.interceptors.response.use(
     response => response,
     error => {
       if (error.response?.status === 401) {
@@ -55,11 +55,7 @@ function MainApp() {
     if (token && !isAuthenticated) {
       const loadUser = async () => {
         try {
-          const response = await axios.get('http://localhost:8000/auth/me', {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
+          const response = await api.get('/auth/me');
           authLogin(response.data);
         } catch (error) {
           console.error('Failed to load user', error);
@@ -97,7 +93,7 @@ function MainApp() {
     setError('');
     
     try {
-      const { data } = await axios.get(`http://localhost:8000/products/${nmId}`);
+      const { data } = await api.get(`/products/${nmId}`);
       setProduct(data);
       localStorage.setItem('searchData', JSON.stringify([data]));
       localStorage.setItem('query', nmId);
