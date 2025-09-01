@@ -24,7 +24,7 @@ app.add_middleware(
         "http://wblist.ru",
         "https://wblist.ru", 
         "http://localhost:5173",
-        "http://localhost:8000"
+        "http://localhost:8000",
         "http://147.45.102.68",
         "http://localhost:3000"
         ],
