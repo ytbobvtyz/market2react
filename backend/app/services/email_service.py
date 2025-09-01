@@ -92,5 +92,6 @@ def cleanup_expired_codes():
         if current_time > data['expires_at']
     ]
     
+    
     for email in expired_emails:
         del verification_codes[email]

@@ -142,6 +142,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         "user": UserResponse.model_validate(user)
     }
 
+
 @router.get("/me", response_model=CurrentUser)
 async def get_current_user_endpoint(
     current_user: User = Depends(get_current_user)
