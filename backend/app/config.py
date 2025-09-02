@@ -8,6 +8,7 @@ from selenium import webdriver
 import os
 from selenium.common.exceptions import WebDriverException
 from app.utils.logger import logger
+import tempfile
 
 class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
@@ -70,6 +71,12 @@ def get_selenium_config() -> Dict[str, Any]:
 
 def get_driver():
     options = Options()
+
+    temp_dir = tempfile.mkdtemp()
+    user_data_dir = os.path.join(temp_dir, "selenium-user-data")
+    os.makedirs(user_data_dir, exist_ok=True)
+
+    options.add_argument(f"--user-data-dir={user_data_dir}")
     
     # Основные параметры
     options.add_argument("--headless=new")
@@ -90,6 +97,9 @@ def get_driver():
     # Дополнительные параметры
     options.add_argument("--lang=ru-RU,ru")
     options.add_argument("--accept-lang=ru-RU,ru")
+
+
+
 
     service = None
     driver = None
