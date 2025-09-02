@@ -6,6 +6,8 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 import os
+from selenium.common.exceptions import WebDriverException
+from app.utils.logger import logger
 
 class Settings(BaseSettings):
     CORS_ORIGINS: List[str] = [
@@ -29,7 +31,7 @@ class Settings(BaseSettings):
     SELENIUM_HEADLESS: bool = True
     SELENIUM_TIMEOUT: int = 15
     SELENIUM_BINARY_LOCATION: str = "/usr/bin/google-chrome"
-
+    # CHROME_DRIVER_PATH: str = Field(..., env="CHROME_DRIVER_PATH")
     # SMTP настройки
     SMTP_SERVER: str = "smtp.yandex.ru"
     SMTP_PORT: int = 465
@@ -84,17 +86,33 @@ def get_driver():
     
     # Для Linux сервера
     options.binary_location = "/usr/bin/google-chrome"
-    
+
     # Дополнительные параметры
     options.add_argument("--lang=ru-RU,ru")
     options.add_argument("--accept-lang=ru-RU,ru")
-    
+
+    service = None
+    driver = None
+
     try:
-        service = Service(
-            ChromeDriverManager().install(),
-            service_args=['--verbose'],
-            log_path='chromedriver.log'
-        )
+        # ПРИОРИТЕТ 1: Используем явный путь из переменных окружения
+        chrome_driver_path = os.environ.get('CHROME_DRIVER_PATH')
+        
+        if chrome_driver_path and os.path.exists(chrome_driver_path):
+            logger.info(f"Using explicit ChromeDriver path: {chrome_driver_path}")
+            service = Service(
+                executable_path=chrome_driver_path,
+                service_args=['--verbose'],
+                log_path='/tmp/chromedriver.log'  # Логи в /tmp для сервера
+            )
+        else:
+            # ПРИОРИТЕТ 2: Автоматическая установка через ChromeDriverManager
+            logger.info("ChromeDriver path not specified or not found. Using ChromeDriverManager...")
+            service = Service(
+                ChromeDriverManager().install(),
+                service_args=['--verbose'],
+                log_path='/tmp/chromedriver.log'
+            )
         
         driver = webdriver.Chrome(service=service, options=options)
         
@@ -109,8 +127,17 @@ def get_driver():
                 });
             '''
         })
-        print ("УСПЕХ в функции get_driver()")
+        
+        logger.info("WebDriver successfully initialized")
         return driver
+        
+    except WebDriverException as e:
+        logger.error(f"WebDriver initialization failed: {str(e)}")
+        if driver:
+            driver.quit()
+        raise
     except Exception as e:
-        print(f"НЕУДАЧА УСПЕХ в функции get_driver() - Ошибка при создании драйвера: {str(e)}")
+        logger.error(f"Unexpected error during WebDriver initialization: {str(e)}")
+        if driver:
+            driver.quit()
         raise
