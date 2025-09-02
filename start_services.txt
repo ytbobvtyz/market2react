@@ -58,6 +58,8 @@ cd /var/www/market2react/market2react
 git pull origin main
 
 source venv/bin/activate
+
+pip freeze > requirements.txt
 pip install -r requirements.txt  # Если добавились новые зависимости
 cd ../frontend
 npm install
