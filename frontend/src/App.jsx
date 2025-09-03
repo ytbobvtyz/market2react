@@ -93,7 +93,7 @@ function MainApp() {
     setError('');
     
     try {
-      const { data } = await api.get(`/products/${nmId}`);
+      const { data } = await api.get(`/api/products/${nmId}`);
       setProduct(data);
       localStorage.setItem('searchData', JSON.stringify([data]));
       localStorage.setItem('query', nmId);

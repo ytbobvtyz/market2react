@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 # Подключаем роутеры (сохраняем вашу текущую структуру)
-app.include_router(wb_router)
+app.include_router(wb_router, prefix="/api")
 app.include_router(auth_router)
 app.include_router(tracking_router, prefix="/api", tags=["tracking"])
 
