@@ -96,3 +96,4 @@ sudo nano /etc/nginx/sites-enabled/market2react
 sudo nginx -t
 sudo systemctl reload nginx
 
+curl -X GET http://localhost:8000/products/123456789

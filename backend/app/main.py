@@ -10,12 +10,14 @@ from app.routes.tracking import router as tracking_router
 from app.database import engine
 from app.models import user, tracking as tracking_models, price_history
 
+import logging
+
 # Создаем таблицы
 user.Base.metadata.create_all(bind=engine)
 tracking_models.Base.metadata.create_all(bind=engine)
 price_history.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(title="Market2React API", version="1.0.0")
 
 # CORS настройки для разработки
 app.add_middleware(
@@ -36,7 +38,7 @@ app.add_middleware(
 # Подключаем роутеры (сохраняем вашу текущую структуру)
 app.include_router(wb_router)
 app.include_router(auth_router)
-app.include_router(tracking_router, prefix="/api/v1", tags=["tracking"])
+app.include_router(tracking_router, tags=["tracking"])
 
 
 
