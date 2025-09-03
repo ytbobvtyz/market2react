@@ -59,7 +59,7 @@ export function TrackingHistory() {
         return;
       }
 
-      const response = await api.get('/user-trackings/', {
+      const response = await api.get('/api/user-trackings/', {
         timeout: 10000 // Таймаут 10 секунд
       });
       
@@ -85,7 +85,7 @@ export function TrackingHistory() {
 
   const fetchPriceHistory = async (trackingId) => {
     try {
-      const response = await api.get(`/tracking/${trackingId}/`);
+      const response = await api.get(`/api/tracking/${trackingId}/`);
       setPriceHistory(response.data.price_history || []);
     } catch (err) {
       console.error('Error fetching price history:', err);
@@ -98,7 +98,7 @@ export function TrackingHistory() {
     }
 
     try {
-      await api.delete(`/tracking/${trackingId}/`);
+      await api.delete(`/api/tracking/${trackingId}/`);
 
       // Обновляем список трекингов
       setTrackings(prev => prev.filter(t => t.id !== trackingId));
@@ -125,7 +125,7 @@ export function TrackingHistory() {
       if (newPrice) updateData.desired_price = parseFloat(newPrice);
 
       const response = await api.patch(
-        `/tracking/${trackingId}/`,
+        `/api/tracking/${trackingId}/`,
         updateData
       );
 
