@@ -70,11 +70,13 @@ def get_selenium_config() -> Dict[str, Any]:
     }
 
 def get_driver():
-    options = Options()
 
-    temp_dir = tempfile.mkdtemp()
-    user_data_dir = os.path.join(temp_dir, "selenium-user-data")
+    # Создаем УНИКАЛЬНЫЙ временный каталог для КАЖДОГО вызова
+    temp_dir = tempfile.mkdtemp(prefix='selenium_')
+    user_data_dir = os.path.join(temp_dir, "chrome_profile")
     os.makedirs(user_data_dir, exist_ok=True)
+
+    options = Options()
 
     options.add_argument(f"--user-data-dir={user_data_dir}")
     
@@ -97,7 +99,7 @@ def get_driver():
     # Дополнительные параметры
     options.add_argument("--lang=ru-RU,ru")
     options.add_argument("--accept-lang=ru-RU,ru")
-
+    options.add_argument("--remote-debugging-port=0")
 
 
 
@@ -105,42 +107,27 @@ def get_driver():
     driver = None
 
     try:
-        # ПРИОРИТЕТ 1: Используем явный путь из переменных окружения
-        chrome_driver_path = os.environ.get('CHROME_DRIVER_PATH')
-        
-        if chrome_driver_path and os.path.exists(chrome_driver_path):
-            logger.info(f"Using explicit ChromeDriver path: {chrome_driver_path}")
-            service = Service(
-                executable_path=chrome_driver_path,
-                service_args=['--verbose'],
-                log_path='/tmp/chromedriver.log'  # Логи в /tmp для сервера
-            )
-        else:
-            # ПРИОРИТЕТ 2: Автоматическая установка через ChromeDriverManager
-            logger.info("ChromeDriver path not specified or not found. Using ChromeDriverManager...")
-            service = Service(
-                ChromeDriverManager().install(),
-                service_args=['--verbose'],
-                log_path='/tmp/chromedriver.log'
-            )
+        # Автоматическая установка ChromeDriver
+        service = Service(
+            ChromeDriverManager().install(),
+            service_args=['--verbose'],
+            log_path='/tmp/chromedriver.log'
+        )
         
         driver = webdriver.Chrome(service=service, options=options)
-        
-        # Изменяем свойства браузера, чтобы выглядеть более "человечно"
+
+        # Изменяем свойства браузера
         driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
             'source': '''
                 Object.defineProperty(navigator, 'webdriver', {
                     get: () => undefined
                 });
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => [1, 2, 3]
-                });
             '''
         })
-        
-        logger.info("WebDriver successfully initialized")
+
+        logger.info(f"WebDriver successfully initialized with temp dir: {temp_dir}")
         return driver
-        
+     
     except WebDriverException as e:
         logger.error(f"WebDriver initialization failed: {str(e)}")
         if driver:
@@ -150,4 +137,6 @@ def get_driver():
         logger.error(f"Unexpected error during WebDriver initialization: {str(e)}")
         if driver:
             driver.quit()
+        import shutil
+        shutil.rmtree(temp_dir, ignore_errors=True)
         raise

@@ -12,12 +12,25 @@ class WBSeleniumParser(BaseParser):
     def __init__(self):
         self.driver = None
         self.wait = None
-    def __del__(self):
-        """Деструктор для гарантированного закрытия драйвера"""
-        self._cleanup()
+        self.temp_dir = None  # Добавляем хранение пути к temp dir
         
+    def parse(self, article: str) -> dict:
+        try:
+            # Инициализируем драйвер
+            self.driver = get_driver()
+            # Сохраняем temp_dir из драйвера для последующей очистки
+            self.temp_dir = getattr(self.driver, 'temp_dir', None)
+            
+            # ... остальная логика парсинга без изменений ...
+            
+        except Exception as e:
+            self._cleanup()
+            raise
+        finally:
+            self._cleanup()
+    
     def _cleanup(self):
-        """Очистка ресурсов"""
+        """Очистка ресурсов включая временные файлы"""
         if self.driver:
             try:
                 self.driver.quit()
@@ -26,7 +39,15 @@ class WBSeleniumParser(BaseParser):
             finally:
                 self.driver = None
                 self.wait = None
-
+        
+        # Очищаем временные файлы
+        if hasattr(self, 'temp_dir') and self.temp_dir:
+            try:
+                import shutil
+                shutil.rmtree(self.temp_dir, ignore_errors=True)
+            except:
+                pass
+            
     def parse(self, article: str) -> dict:
         """Основной метод парсинга через Selenium"""
         try:
