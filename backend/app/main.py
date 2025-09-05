@@ -93,3 +93,15 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "ok", "message": "API is running"}
+
+@app.get("/debug/env")
+async def debug_env():
+    import os, sys, subprocess
+    return {
+        "python_executable": sys.executable,
+        "python_path": sys.path,
+        "current_directory": os.getcwd(),
+        "environment_variables": {k: v for k, v in os.environ.items() if any(x in k.lower() for x in ['path', 'python', 'home', 'user'])},
+        "process_user": subprocess.run(['whoami'], capture_output=True, text=True).stdout.strip(),
+        "selenium_test": subprocess.run([sys.executable, '-c', 'from selenium import webdriver; print("Selenium import OK")'], capture_output=True, text=True).stdout
+    }
