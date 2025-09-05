@@ -3,6 +3,9 @@ print(sys.path)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+import concurrent.futures
+import logging
 
 from app.routes.wb_routes import router as wb_router
 from app.routes.auth import router as auth_router
@@ -10,16 +13,56 @@ from app.routes.tracking import router as tracking_router
 from app.database import engine
 from app.models import user, tracking as tracking_models, price_history
 
-import logging
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Создаем таблицы
-user.Base.metadata.create_all(bind=engine)
-tracking_models.Base.metadata.create_all(bind=engine)
-price_history.Base.metadata.create_all(bind=engine)
+# Глобальная переменная для Process Pool Executor
+process_pool = None
 
-app = FastAPI(title="Market2React API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan менеджер для управления жизненным циклом приложения
+    """
+    global process_pool
+    
+    # Startup логика
+    logger.info("Starting application...")
+    
+    # Создаем таблицы БД
+    logger.info("Creating database tables...")
+    user.Base.metadata.create_all(bind=engine)
+    tracking_models.Base.metadata.create_all(bind=engine)
+    price_history.Base.metadata.create_all(bind=engine)
+    
+    # Инициализируем Process Pool Executor для Selenium
+    logger.info("Initializing Process Pool Executor...")
+    process_pool = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+    
+    yield
+    
+    # Shutdown логика
+    logger.info("Shutting down application...")
+    
+    # Завершаем Process Pool Executor
+    if process_pool:
+        logger.info("Shutting down Process Pool Executor...")
+        process_pool.shutdown(wait=False)
+    
+    logger.info("Application shutdown completed")
 
-# CORS настройки для разработки
+# Создаем приложение с lifespan
+app = FastAPI(
+    title="Market2React API", 
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Сохраняем process_pool в state приложения для доступа из роутеров
+app.state.process_pool = process_pool
+
+# CORS настройки 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[

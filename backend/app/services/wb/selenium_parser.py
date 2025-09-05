@@ -12,7 +12,21 @@ class WBSeleniumParser(BaseParser):
     def __init__(self):
         self.driver = None
         self.wait = None
+    def __del__(self):
+        """Деструктор для гарантированного закрытия драйвера"""
+        self._cleanup()
         
+    def _cleanup(self):
+        """Очистка ресурсов"""
+        if self.driver:
+            try:
+                self.driver.quit()
+            except:
+                pass
+            finally:
+                self.driver = None
+                self.wait = None
+
     def parse(self, article: str) -> dict:
         """Основной метод парсинга через Selenium"""
         try:

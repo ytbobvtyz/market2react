@@ -4,8 +4,23 @@ from app.utils.logger import logger  # Импортируем готовый л�
 
 class ParserService:
     def __init__(self):
-        self.api_parser = WBApiParser()
-        self.selenium_parser = WBSeleniumParser()
+        # Ленивая инициализация - создаем парсеры только при первом использовании
+        self._api_parser = None
+        self._selenium_parser = None
+        
+    @property
+    def api_parser(self):
+        if self._api_parser is None:
+            self._api_parser = WBApiParser()
+        return self._api_parser
+    
+    @property
+    def selenium_parser(self):
+        if self._selenium_parser is None:
+            self._selenium_parser = WBSeleniumParser()
+        return self._selenium_parser
+        
+
         
     def parse_wb_product(self, article: str) -> dict:
         try:

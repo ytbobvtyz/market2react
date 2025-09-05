@@ -1,18 +1,20 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from app.services.parser_service import ParserService
 from async_timeout import timeout
 import asyncio
 import logging
 
 router = APIRouter()
-parser_service = ParserService()
 logger = logging.getLogger(__name__)
 
 @router.get("/products/{article}")
-async def get_product(article: str):
+async def get_product(article: str, request: Request):
     """
     Парсинг товара с Wildberries через изолированный процесс
     """
+    # Получаем process_pool из state приложения
+    process_pool = request.app.state.process_pool
+
     try:
         # Проверяем валидность артикула
         if not article.isdigit() or len(article) < 6:
@@ -21,12 +23,13 @@ async def get_product(article: str):
                 detail="Артикул должен содержать только цифры (минимум 6 символов)"
             )
         
-        # Запускаем парсинг в отдельном процессе
+        # Запускаем парсинг в отдельном процессе с таймаутом
         async with timeout(45):
-            # Используем run_in_executor для изоляции
+            # Используем ProcessPoolExecutor для изоляции
             data = await asyncio.get_event_loop().run_in_executor(
-                None, 
-                lambda: parser_service.parse_wb_product(article)
+                process_pool, 
+                parse_product_wrapper, 
+                article
             )
             
             return data
@@ -38,3 +41,17 @@ async def get_product(article: str):
     except Exception as e:
         logger.error(f"Error parsing {article}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+def parse_product_wrapper(article: str):
+    """
+    Обертка для запуска в отдельном процессе
+    Каждый процесс создает свой экземпляр ParserService
+    """
+    try:
+        # Создаем новый экземпляр для каждого процесса
+        parser_service = ParserService()
+        return parser_service.parse_wb_product(article)
+    except Exception as e:
+        logger.error(f"Error in process for article {article}: {str(e)}")
+        raise
