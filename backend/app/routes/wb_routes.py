@@ -3,9 +3,10 @@ from app.services.parser_service import ParserService
 from async_timeout import timeout
 import asyncio
 import logging
+from app.utils.logger import get_parser_logger
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = get_parser_logger()
 
 @router.get("/products/{article}")
 async def get_product(article: str, request: Request):
@@ -16,6 +17,7 @@ async def get_product(article: str, request: Request):
     process_pool = request.app.state.process_pool
 
     try:
+        logger.info(f"Parsing product: {article}")
         # Проверяем валидность артикула
         if not article.isdigit() or len(article) < 6:
             raise HTTPException(
@@ -31,7 +33,7 @@ async def get_product(article: str, request: Request):
                 parse_product_wrapper, 
                 article
             )
-            
+            logger.info(f"Successfully parsed product: {article}")
             return data
                 
     except asyncio.TimeoutError:

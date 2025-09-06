@@ -1,11 +1,14 @@
 import sys
 print(sys.path)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import concurrent.futures
 import logging
+import time
+from datetime import datetime
+from pathlib import Path
 
 from app.routes.wb_routes import router as wb_router
 from app.routes.auth import router as auth_router
@@ -62,6 +65,31 @@ app = FastAPI(
 # Сохраняем process_pool в state приложения для доступа из роутеров
 app.state.process_pool = process_pool
 
+
+# Мидлварь для логирования всех запросов
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    
+    # Логируем входящий запрос
+    client_ip = request.client.host if request.client else "unknown"
+    logger.info(f"→ {request.method} {request.url.path} | IP: {client_ip} | Query: {dict(request.query_params)}")
+    
+    try:
+        response = await call_next(request)
+        
+        # Логируем ответ
+        process_time = time.time() - start_time
+        logger.info(f"← {response.status_code} | Time: {process_time:.3f}s | Size: {response.headers.get('content-length', '0')}b")
+        
+        return response
+        
+    except Exception as e:
+        # Логируем ошибки
+        process_time = time.time() - start_time
+        logger.error(f"✗ ERROR: {str(e)} | Time: {process_time:.3f}s")
+        raise
+
 # CORS настройки 
 app.add_middleware(
     CORSMiddleware,
@@ -94,14 +122,20 @@ def read_root():
 def health_check():
     return {"status": "ok", "message": "API is running"}
 
-@app.get("/debug/env")
-async def debug_env():
-    import os, sys, subprocess
-    return {
-        "python_executable": sys.executable,
-        "python_path": sys.path,
-        "current_directory": os.getcwd(),
-        "environment_variables": {k: v for k, v in os.environ.items() if any(x in k.lower() for x in ['path', 'python', 'home', 'user'])},
-        "process_user": subprocess.run(['whoami'], capture_output=True, text=True).stdout.strip(),
-        "selenium_test": subprocess.run([sys.executable, '-c', 'from selenium import webdriver; print("Selenium import OK")'], capture_output=True, text=True).stdout
-    }
+
+# Эндпоинт для просмотра логов
+@app.get("/api/logs")
+async def get_logs(limit: int = 100):
+    """
+    Просмотр последних логов
+    """
+    try:
+        log_file = Path(__file__).parent.parent / 'logs' / 'app.log'
+        if log_file.exists():
+            with open(log_file, 'r') as f:
+                lines = f.readlines()[-limit:]
+            return {"logs": lines}
+        else:
+            return {"error": "Log file not found"}
+    except Exception as e:
+        return {"error": str(e)}

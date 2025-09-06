@@ -86,6 +86,15 @@ sudo systemctl status nginx
 sudo tail -f /var/log/nginx/error.log
 sudo tail -f /var/log/nginx/access.log
 
+# Логи ошибок
+tail -f /var/log/market2react/error.log
+
+# Логи доступа (запросов)
+tail -f /var/log/market2react/access.log
+
+# systemd journal
+sudo journalctl -u market2react.service -f
+
 Пересборка фронтенд
 cd /var/www/market2react/market2react/frontend
 rm -rf dist node_modules/.vite

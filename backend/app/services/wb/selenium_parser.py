@@ -82,9 +82,9 @@ class WBSeleniumParser(BaseParser):
             html = self.driver.page_source
             
             # Сохраняем HTML для отладки
-            with open(f"debug_{article}.html", "w", encoding="utf-8") as f:
-                f.write(html)
-            print(f"HTML сохранен в debug_{article}.html")
+            # with open(f"debug_{article}.html", "w", encoding="utf-8") as f:
+            #     f.write(html)
+            # print(f"HTML сохранен в debug_{article}.html")
             
             soup = BeautifulSoup(html, 'html.parser')
             

@@ -24,14 +24,14 @@ class ParserService:
         
     def parse_wb_product(self, article: str) -> dict:
         try:
-            logger.info(f"Trying API parser for article {article}")
-            return self.api_parser.parse(article)
-        except Exception as api_error:
-            logger.warning(f"API failed: {str(api_error)}")
-            try:
-                logger.info("Falling back to Selenium parser")
-                return self.selenium_parser.parse(article)
-            except Exception as selenium_error:
-                error_msg = f"All parsers failed: {str(selenium_error)}"
-                logger.error(error_msg)
-                raise Exception(error_msg)
+        #     logger.info(f"Trying API parser for article {article}")
+        #     return self.api_parser.parse(article)
+        # except Exception as api_error:
+        #     logger.warning(f"API failed: {str(api_error)}")
+        #     try:
+            logger.info("Falling back to Selenium parser")
+            return self.selenium_parser.parse(article)
+        except Exception as selenium_error:
+            error_msg = f"All parsers failed: {str(selenium_error)}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
