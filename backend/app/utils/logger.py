@@ -49,3 +49,6 @@ def get_db_logger():
 
 def get_parser_logger():
     return setup_logger('parser', 'parser.log')
+
+def get_auth_logger():
+    return setup_logger('auth', 'auth.log')

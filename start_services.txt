@@ -88,7 +88,6 @@ sudo tail -f /var/log/nginx/access.log
 
 # Логи ошибок
 tail -f /var/log/market2react/error.log
-
 # Логи доступа (запросов)
 tail -f /var/log/market2react/access.log
 
@@ -106,3 +105,12 @@ sudo nginx -t
 sudo systemctl reload nginx
 
 curl -X GET http://localhost:8000/api/products/123456789
+
+# Все логи приложения в реальном времени
+tail -f /var/www/market2react/market2react/backend/app/logs/app.log
+
+# Только API запросы
+tail -f /var/www/market2react/market2react/backend/logs/api_requests.log
+
+# Только парсер
+tail -f /var/www/market2react/market2react/backend/logs/parser.log
