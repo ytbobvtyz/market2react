@@ -49,7 +49,7 @@ sudo systemctl stop market2react
 
 # Смотрим логи в реальном времени
 sudo journalctl -u market2react.service -f
-
+ 
 # Или последние ошибки
 sudo journalctl -u market2react.service -n 50 --no-pager
 
