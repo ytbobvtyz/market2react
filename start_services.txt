@@ -117,3 +117,10 @@ tail -f /var/www/market2react/market2react/backend/app/logs/app.log
 
 Редактировать службу: 
 sudo nano /etc/systemd/system/market2react.service
+
+Для запуска по расписанию
+1) сделать исполняемым: 
+chmod +x backend/run_parsing.sh
+
+2) открыть корнтаб
+crontab -e
