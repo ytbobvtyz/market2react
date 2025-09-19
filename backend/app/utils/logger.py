@@ -52,3 +52,6 @@ def get_parser_logger():
 
 def get_auth_logger():
     return setup_logger('auth', 'auth.log')
+
+def get_schedule_logger():
+    return setup_logger('scheduler', 'schedule.log')
