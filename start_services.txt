@@ -124,3 +124,23 @@ chmod +x backend/run_parsing.sh
 
 2) открыть корнтаб
 crontab -e
+# Просмотр текущих заданий cron
+crontab -l
+
+# Проверь синтаксис crontab
+sudo service cron restart
+
+
+Миграция БД:
+
+Вноси изменения в модели SQLAlchemy
+
+Создай миграцию: alembic revision --autogenerate -m "описание"
+
+Проверь файл миграции (автогенерация не всегда идеальна)
+
+Примени миграцию: alembic upgrade head
+
+Протестируй на тестовой базе
+
+Запусти на продакшене

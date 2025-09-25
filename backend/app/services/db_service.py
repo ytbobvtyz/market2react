@@ -39,3 +39,21 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         plain_password.encode('utf-8'),
         hashed_password.encode('utf-8')
     )
+
+def create_oauth_user(db: Session, user_data: dict) -> User:
+    """Создание пользователя через OAuth"""
+    from app.utils.auth import get_password_hash
+    
+    db_user = User(
+        email=user_data["email"],
+        username=user_data["username"],
+        password_hash=get_password_hash("oauth_password"),  # Заглушка
+        oauth_provider=user_data.get("oauth_provider"),
+        oauth_id=user_data.get("oauth_id"),
+        is_verified=user_data.get("is_verified", True)
+    )
+    
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user

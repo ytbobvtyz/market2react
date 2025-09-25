@@ -10,6 +10,8 @@ import { parsingService } from './api/parsingService';
 import { setAuthToken } from './api/apiService';
 import './App.css';
 import { api } from './api/apiService';
+import OAuthCallback from './pages/OAuthCallback';
+import OAuthSuccess from './pages/OAuthSuccess';
 
 // Настройка интерцепторов axios
 const setupAxiosInterceptors = () => {
@@ -248,8 +250,10 @@ const handlePriceConfirm = async (price, name) => {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<MainApp />} />
+      <Route path="/" element={<MainApp />} />      
       <Route path="/history" element={<TrackingHistory />} />
+      <Route path="/oauth/callback" element={<OAuthCallback />} />
+      <Route path="/oauth/success" element={<OAuthSuccess />} />
     </Routes>
   );
 }

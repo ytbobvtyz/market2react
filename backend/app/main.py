@@ -12,6 +12,7 @@ from pathlib import Path
 
 from app.routes.wb_routes import router as wb_router
 from app.routes.auth import router as auth_router
+from app.routes.oauth import router as oauth_router
 from app.routes.tracking import router as tracking_router
 from app.database import engine
 from app.models import user, tracking as tracking_models, price_history
@@ -109,6 +110,7 @@ app.add_middleware(
 # Подключаем роутеры (сохраняем вашу текущую структуру)
 app.include_router(wb_router, prefix="/api")
 app.include_router(auth_router)
+app.include_router(oauth_router)
 app.include_router(tracking_router, prefix="/api", tags=["tracking"])
 
 

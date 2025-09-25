@@ -1,0 +1,37 @@
+.oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.oauth-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.oauth-btn-google {
+  border-color: #db4437;
+  color: #db4437;
+}
+
+.oauth-btn-google:hover {
+  background-color: #f8f9fa;
+  border-color: #c23321;
+}
+
+.oauth-icon {
+  margin-right: 10px;
+  font-weight: bold;
+  font-size: 16px;
+}

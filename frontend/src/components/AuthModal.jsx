@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { api } from '../api/apiService'; // Импортируем настроенный api
+import { api } from '../api/apiService';
 import './AuthModal.css';
+// Добавляем импорт OAuthButton
+import OAuthButton from './OAuthButton';
 
 export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
   const [formData, setFormData] = useState({
@@ -14,6 +16,17 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationLoading, setVerificationLoading] = useState(false);
 
+  // Добавляем обработчики для OAuth
+  const handleOAuthSuccess = () => {
+    // OAuth flow обрабатывается автоматически через redirect
+    onClose();
+  };
+
+  const handleOAuthError = (errorMsg) => {
+    setErrors({ general: errorMsg });
+  };
+
+  // Остальной код без изменений...
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -21,7 +34,6 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
       [name]: value
     });
     
-    // Очищаем ошибку для этого поля при изменении
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -74,7 +86,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
         }
       );
 
-      localStorage.setItem('access_token', response.data.access_token); // Сохраняем токен
+      localStorage.setItem('access_token', response.data.access_token);
       onLogin({
         user: response.data.user,
         token: response.data.access_token
@@ -95,7 +107,6 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
 
   const handleRegister = async () => {
     try {
-      // Сначала регистрируем
       const response = await api.post(
         '/auth/register-with-verification',
         {
@@ -106,7 +117,6 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
         }
       );
 
-      // Затем автоматически логинимся
       const loginResponse = await api.post(
         '/auth/login',
         new URLSearchParams({
@@ -120,7 +130,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
         }
       );
       
-      localStorage.setItem('access_token', loginResponse.data.access_token); // Сохраняем токен
+      localStorage.setItem('access_token', loginResponse.data.access_token);
       onLogin({
         user: loginResponse.data.user,
         token: loginResponse.data.access_token
@@ -173,6 +183,19 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
             {errors.general}
           </div>
         )}
+
+        {/* Добавляем OAuth кнопку ПЕРЕД формой */}
+        <div className="oauth-section">
+          <OAuthButton 
+            provider="google" 
+            onSuccess={handleOAuthSuccess}
+            onError={handleOAuthError}
+          />
+        </div>
+
+        <div className="divider">
+          <span>или через email</span>
+        </div>
 
         <form onSubmit={handleSubmit}>
           {!isLoginMode && (
