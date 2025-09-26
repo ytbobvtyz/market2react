@@ -95,28 +95,50 @@ function MainApp() {
     setError('');
     setSearchProgress(0);
     
+    // Более плавный прогресс-бар
     const progressInterval = setInterval(() => {
-      setSearchProgress(prev => Math.min(prev + 10, 90));
-    }, 2000);
-    
+      setSearchProgress(prev => {
+        if (prev >= 95) return 95; // Останавливаемся на 95% до завершения
+        return prev + (100 - prev) * 0.1; // Плавное замедление
+      });
+    }, 1000);
+
     try {
+      console.log('🔍 Начинаем парсинг товара:', nmId);
+      
       const { data } = await api.get(`/api/products/${nmId}`, {
-        timeout: 60000 // 60 секунд
+        timeout: 180000 // 3 минуты ⚡
       });
       
+      // Успешное завершение
       clearInterval(progressInterval);
       setSearchProgress(100);
+      
+      console.log('✅ Парсинг завершен:', data);
       setProduct(data);
       localStorage.setItem('searchData', JSON.stringify([data]));
       localStorage.setItem('query', nmId);
       
-      setTimeout(() => setSearchProgress(0), 1000);
+      // Плавный сброс прогресса
+      setTimeout(() => setSearchProgress(0), 2000);
       
     } catch (err) {
       clearInterval(progressInterval);
       setSearchProgress(0);
-      setError(err.response?.data?.detail || 
-        err.message === 'Network Error' ? 'Сервер недоступен' : 'Ошибка запроса');
+      
+      console.error('❌ Ошибка парсинга:', err);
+      
+      // Улучшенная обработка ошибок
+      if (err.code === 'ECONNABORTED') {
+        setError('Парсинг занял слишком много времени. Попробуйте еще раз.');
+      } else if (err.message === 'Network Error') {
+        setError('Сервер недоступен. Проверьте соединение.');
+      } else if (err.response?.status === 504) {
+        setError('Сервер занят. Попробуйте через минуту.');
+      } else {
+        setError(err.response?.data?.detail || 'Ошибка запроса. Попробуйте еще раз.');
+      }
+      
       setProduct(null);
     } finally {
       setLoading(false);
