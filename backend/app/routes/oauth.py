@@ -16,8 +16,8 @@ router = APIRouter(prefix="/oauth", tags=["oauth"])
 # Конфигурация Google OAuth
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/oauth/google/callback")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://wblist.ru/oauth/google/callback")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://wblist.ru")
 
 @router.get("/google")
 async def google_oauth():
@@ -26,7 +26,7 @@ async def google_oauth():
         "https://accounts.google.com/o/oauth2/v2/auth?"
         f"client_id={GOOGLE_CLIENT_ID}&"
         "response_type=code&"
-        f"redirect_uri=http://localhost:8000/oauth/google/callback&"
+        f"redirect_uri={GOOGLE_REDIRECT_URI}&"
         "scope=openid%20email%20profile&"
         "access_type=offline&"
     )
