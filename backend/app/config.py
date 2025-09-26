@@ -139,7 +139,7 @@ def get_driver():
             '''
         })
         # Устанавливаем таймауты
-        driver.set_page_load_timeout(30)
+        driver.set_page_load_timeout(60)
         driver.implicitly_wait(10)
 
         logger.info(f"WebDriver successfully initialized with temp dir: {temp_dir}")
