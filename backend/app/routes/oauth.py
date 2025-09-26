@@ -29,7 +29,6 @@ async def google_oauth():
         f"redirect_uri=http://localhost:8000/oauth/google/callback&"
         "scope=openid%20email%20profile&"
         "access_type=offline&"
-        "prompt=consent"
     )
     return RedirectResponse(google_oauth_url)
 
