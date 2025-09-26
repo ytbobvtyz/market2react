@@ -1,6 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import { AuthContext } from './contexts/auth-context';
 import { UserMenu } from './components/UserMenu';
 import { AuthModal } from './components/AuthModal';
@@ -13,7 +12,6 @@ import { api } from './api/apiService';
 import OAuthCallback from './pages/OAuthCallback';
 import OAuthSuccess from './pages/OAuthSuccess';
 
-// Настройка интерцепторов axios
 const setupAxiosInterceptors = () => {
   api.interceptors.request.use(config => {
     const token = localStorage.getItem('access_token');
@@ -95,22 +93,20 @@ function MainApp() {
     setError('');
     setSearchProgress(0);
     
-    // Более плавный прогресс-бар
     const progressInterval = setInterval(() => {
       setSearchProgress(prev => {
-        if (prev >= 95) return 95; // Останавливаемся на 95% до завершения
-        return prev + 5; // Плавное замедление
+        if (prev >= 95) return 95;
+        return prev + 5;
       });
     }, 1000);
 
     try {
-      console.log('🔍 Начинаем парсинг товара:', nmId);
+      console.log('Начинаем парсинг товара:', nmId);
       
       const { data } = await api.get(`/api/products/${nmId}`, {
-        timeout: 180000 // 3 минуты ⚡
+        timeout: 180000
       });
       
-      // Успешное завершение
       clearInterval(progressInterval);
       setSearchProgress(100);
       
@@ -119,7 +115,6 @@ function MainApp() {
       localStorage.setItem('searchData', JSON.stringify([data]));
       localStorage.setItem('query', nmId);
       
-      // Плавный сброс прогресса
       setTimeout(() => setSearchProgress(0), 2000);
       
     } catch (err) {
@@ -128,7 +123,6 @@ function MainApp() {
       
       console.error('❌ Ошибка парсинга:', err);
       
-      // Улучшенная обработка ошибок
       if (err.code === 'ECONNABORTED') {
         setError('Парсинг занял слишком много времени. Попробуйте еще раз.');
       } else if (err.message === 'Network Error') {
@@ -200,61 +194,84 @@ function MainApp() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>  Wish Benefit list</h1>
-        <h2>Следи за изменением цен и получай выгоду</h2>
-        <div className="header-actions">
-          <button onClick={handleHistoryClick} className="history-btn">
-            Мои запросы
-          </button>
-          <UserMenu onLoginClick={() => setIsAuthModalOpen(true)} />
+        <div className="header-content">
+          <div className="header-title">
+            <h1>Wish Benefit List</h1>
+            <p>Следи за изменением цен и получай выгоду</p>
+          </div>
+          <div className="header-actions">
+            <button onClick={handleHistoryClick} className="history-btn">
+              Мой список отслеживания
+            </button>
+            <UserMenu onLoginClick={() => setIsAuthModalOpen(true)} />
+          </div>
         </div>
       </header>
 
-      <div className="search-form">
-        <input
-          type="text"
-          value={nmId}
-          onChange={(e) => setNmId(e.target.value)}
-          placeholder="Введите артикул WB"
-          disabled={loading}
-        />
-        
-        {/* Показываем либо кнопку, либо индикатор прогресса */}
-        {loading ? (
-          <div className="progress-indicator">
-            <div 
-              className="progress-bar" 
-              style={{ width: `${searchProgress}%` }}
-            ></div>
-            <span>Поиск товара... {searchProgress}%</span>
+      <main className="main-content">
+        <div className="search-container">
+          <h2 className="search-title">Найди свой товар на Wildberries</h2>
+          <div className="search-form">
+            <input
+              type="text"
+              value={nmId}
+              onChange={(e) => setNmId(e.target.value)}
+              placeholder="Введите артикул товара WB"
+              disabled={loading}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            
+            {loading ? (
+              <div className="progress-indicator">
+                <div className="progress-bar-container">
+                  <div 
+                    className="progress-bar" 
+                    style={{ width: `${searchProgress}%` }}
+                  ></div>
+                </div>
+                <span>Поиск товара... {searchProgress}%</span>
+              </div>
+            ) : (
+              <button onClick={handleSearch} className="search-btn">
+                Найти
+              </button>
+            )}
           </div>
-        ) : (
-          <button onClick={handleSearch}>
-            Найти
-          </button>
-        )}
-      </div>
+        </div>
 
-      {error && <div className="error">{error}</div>}
+        {error && <div className="error-message">{error}</div>}
 
-      {product && (
-        <div className="product-card">
-          <div className="product-info">
-            <h2>{product.name}</h2>
-            <p><strong>Бренд:</strong> {product.brand}</p>
-            <p><strong>Цена:</strong> {Math.floor(product.price)} ₽</p>
-            <p><strong>Рейтинг товара:</strong> {product.rating || 'нет данных'}</p>
-            <p><strong>Количество отзывов:</strong> {product.feedback_count || 'нет данных'}</p>
-            <div className="characteristics">
-              {/* Характеристики */}
+        {product && (
+          <div className="product-card">
+            <div className="product-header">
+              <h3>{product.name}</h3>
+              <div className="product-badge">
+                <span className="brand">{product.brand}</span>
+              </div>
             </div>
+            
+            <div className="product-stats">
+              <div className="stat-item">
+                <span className="stat-label">Цена:</span>
+                <span className="stat-value price">{Math.floor(product.price)} ₽</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Рейтинг:</span>
+                <span className="stat-value rating">{product.rating || 'нет данных'}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Отзывы:</span>
+                <span className="stat-value feedback">{product.feedback_count || 'нет данных'}</span>
+              </div>
+            </div>
+
             <div className="product-actions">
               <button 
                 onClick={handleSaveClick}
                 className="save-request-btn"
                 disabled={parsingLoading}
               >
-                {parsingLoading ? 'Сохранение...' : 'Сохранить мой запрос'}
+                {parsingLoading ? '💾 Сохранение...' : '💾 Сохранить запрос'}
               </button>
               
               <a 
@@ -263,12 +280,12 @@ function MainApp() {
                 rel="noopener noreferrer"
                 className="wb-link"
               >
-                Открыть на WB
+                📱 Открыть на WB
               </a>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
       
       {isAuthModalOpen && (
         <AuthModal
