@@ -1,11 +1,12 @@
 import React from 'react';
 import './OAuthButton.css';
+import { api } from '../api/apiService';
 
 const OAuthButton = ({ provider, onSuccess, onError }) => {
   const handleOAuthLogin = async () => {
     try {
       // Перенаправление на backend OAuth endpoint
-      window.location.href = `http://localhost:8000/oauth/${provider}`;
+      window.location.href = `${api}/oauth/${provider}`;
     } catch (error) {
       onError(`Ошибка OAuth: ${error.message}`);
     }
