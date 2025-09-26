@@ -99,7 +99,7 @@ function MainApp() {
     const progressInterval = setInterval(() => {
       setSearchProgress(prev => {
         if (prev >= 95) return 95; // Останавливаемся на 95% до завершения
-        return prev + (100 - prev) * 0.1; // Плавное замедление
+        return prev + 5; // Плавное замедление
       });
     }, 1000);
 
