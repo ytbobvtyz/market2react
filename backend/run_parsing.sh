@@ -14,3 +14,4 @@ python /var/www/market2react/market2react/backend/app/utils/parse_on_schedule.py
 
 # Деактивируем виртуальное окружение
 deactivate
+
