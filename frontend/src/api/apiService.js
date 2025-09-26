@@ -4,6 +4,10 @@ import { API_BASE_URL } from './config';
 // Создаем экземпляр axios с базовыми настройками
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 60000, // 60 секунд вместо стандартных 5-10с
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // Функция для установки токена
@@ -34,7 +38,6 @@ api.interceptors.response.use(
       // Перенаправляем на страницу логина при истечении токена
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

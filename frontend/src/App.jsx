@@ -47,7 +47,7 @@ function MainApp() {
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [targetPrice, setTargetPrice] = useState(null);
   const [customName, setCustomName] = useState('');
-
+  const [searchProgress, setSearchProgress] = useState(0);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -93,14 +93,28 @@ function MainApp() {
 
     setLoading(true);
     setError('');
+    setSearchProgress(0);
+    
+    const progressInterval = setInterval(() => {
+      setSearchProgress(prev => Math.min(prev + 10, 90));
+    }, 2000);
     
     try {
-      const { data } = await api.get(`/api/products/${nmId}`);
+      const { data } = await api.get(`/api/products/${nmId}`, {
+        timeout: 60000 // 60 секунд
+      });
+      
+      clearInterval(progressInterval);
+      setSearchProgress(100);
       setProduct(data);
       localStorage.setItem('searchData', JSON.stringify([data]));
       localStorage.setItem('query', nmId);
-
+      
+      setTimeout(() => setSearchProgress(0), 1000);
+      
     } catch (err) {
+      clearInterval(progressInterval);
+      setSearchProgress(0);
       setError(err.response?.data?.detail || 
         err.message === 'Network Error' ? 'Сервер недоступен' : 'Ошибка запроса');
       setProduct(null);
@@ -116,17 +130,15 @@ function MainApp() {
       return;
     }
     
-    // Показываем модальное окно для ввода цены
     setIsPriceModalOpen(true);
   };
 
-const handlePriceConfirm = async (price, name) => {
+  const handlePriceConfirm = async (price, name) => {
     setTargetPrice(price);
-    setCustomName(name); // Сохраняем кастомное имя
+    setCustomName(name);
     setParsingLoading(true);
     
     try {
-      // Получаем данные из localStorage
       const searchData = localStorage.getItem('searchData');
       const query = localStorage.getItem('query');
       
@@ -137,7 +149,6 @@ const handlePriceConfirm = async (price, name) => {
 
       const results = JSON.parse(searchData);
       
-      // Добавляем целевую цену к данным для сохранения
       const saveData = {
         query,
         results,
@@ -145,7 +156,6 @@ const handlePriceConfirm = async (price, name) => {
         custom_name: name
       };
       
-      // Сохраняем в базу данных через наш сервис
       const saveResult = await parsingService.saveParsingResults(saveData);
       
       alert(`Данные сохранены! Уведомление придёт на почту при достижении цены ${price} ₽`);
@@ -185,9 +195,21 @@ const handlePriceConfirm = async (price, name) => {
           placeholder="Введите артикул WB"
           disabled={loading}
         />
-        <button onClick={handleSearch} disabled={loading}>
-          {loading ? 'Поиск...' : 'Найти'}
-        </button>
+        
+        {/* Показываем либо кнопку, либо индикатор прогресса */}
+        {loading ? (
+          <div className="progress-indicator">
+            <div 
+              className="progress-bar" 
+              style={{ width: `${searchProgress}%` }}
+            ></div>
+            <span>Поиск товара... {searchProgress}%</span>
+          </div>
+        ) : (
+          <button onClick={handleSearch}>
+            Найти
+          </button>
+        )}
       </div>
 
       {error && <div className="error">{error}</div>}
@@ -205,7 +227,7 @@ const handlePriceConfirm = async (price, name) => {
             </div>
             <div className="product-actions">
               <button 
-                onClick={handleSaveClick} // Изменяем на handleSaveClick
+                onClick={handleSaveClick}
                 className="save-request-btn"
                 disabled={parsingLoading}
               >
@@ -225,7 +247,6 @@ const handlePriceConfirm = async (price, name) => {
         </div>
       )}
       
-      {/* Модальное окно авторизации */}
       {isAuthModalOpen && (
         <AuthModal
           isLoginMode={isLoginMode}
@@ -235,7 +256,6 @@ const handlePriceConfirm = async (price, name) => {
         />
       )}
       
-      {/* Модальное окно для ввода цены */}
       <PriceModal
         isOpen={isPriceModalOpen}
         onClose={() => setIsPriceModalOpen(false)}
