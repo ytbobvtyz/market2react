@@ -271,7 +271,7 @@ body {
   position: relative;
   color: transparent;
 }
-
+ 
 .search-form button:disabled::after {
   content: '';
   position: absolute;

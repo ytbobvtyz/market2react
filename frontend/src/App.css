@@ -458,42 +458,62 @@ a:focus-visible {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
-/* Фикс для кнопок авторизации */
-.header-actions .auth-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
 
-.header-actions .auth-btn {
-  padding: 0.5rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+/* Исправление цвета текста в поле ввода */
+.search-form input {
+  flex: 1;
+  min-width: 300px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
+  font-size: 1rem;
+  background: white;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
-  backdrop-filter: blur(10px);
+  color: #1f2937; /* Добавляем явное указание цвета текста */
 }
 
-.header-actions .auth-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+.search-form input:focus {
+  outline: none;
+  border-color: #7e22ce;
+  box-shadow: 0 0 0 2px rgba(126, 34, 206, 0.1);
+  color: #1f2937; /* И в фокусе тоже */
 }
 
-.header-actions .auth-btn.primary {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+.search-form input::placeholder {
+  color: #6b7280; /* Цвет плейсхолдера */
 }
 
-.header-actions .auth-btn.primary:hover {
-  background: rgba(255, 255, 255, 0.3);
+/* Явное указание для disabled состояния */
+.search-form input:disabled {
+  background: #f9fafb;
+  color: #6b7280; /* Серый цвет для disabled */
+  cursor: not-allowed;
 }
 
-/* Убедимся, что UserMenu имеет правильные отступы */
-.user-menu {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+/* Дополнительно для мобильных устройств */
+@media (max-width: 768px) {
+  .search-form input {
+    color: #1f2937 !important; /* Принудительно черный текст */
+    background: white !important;
+    -webkit-text-fill-color: #1f2937 !important; /* Для Safari */
+  }
+  
+  .search-form input::placeholder {
+    color: #6b7280 !important;
+    opacity: 1; /* Убедимся, что плейсхолдер виден */
+  }
+  
+  .search-form input:disabled {
+    color: #6b7280 !important;
+    background: #f9fafb !important;
+  }
+}
+
+/* Для браузеров, которые могут переопределять стили */
+.search-form input:-webkit-autofill,
+.search-form input:-webkit-autofill:hover, 
+.search-form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #1f2937 !important;
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
