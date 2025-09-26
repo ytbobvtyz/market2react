@@ -11,15 +11,15 @@ const OAuthButton = ({ provider, onSuccess, onError }) => {
     const envApiUrl = import.meta.env.VITE_API_URL;
     
     if (envApiUrl) {
-      return `${envApiUrl}api/oauth/${provider}`;
+      return `${envApiUrl}oauth/${provider}`;
     }
     
     if (window.location.origin.includes('localhost')) {
       // Development
-      return `http://localhost:8000/api/oauth/${provider}`;
+      return `http://localhost:8000/oauth/${provider}`;
     } else {
       // Production
-      return `${window.location.origin}/api/oauth/${provider}`;
+      return `${window.location.origin}/oauth/${provider}`;
     }
   };
 
