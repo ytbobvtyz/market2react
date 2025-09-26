@@ -200,7 +200,8 @@ function MainApp() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>  WishBenefit  </h1>
+        <h1>  Wish Benefit list</h1>
+        <h2>Следи за изменением цен и получай выгоду</h2>
         <div className="header-actions">
           <button onClick={handleHistoryClick} className="history-btn">
             Мои запросы

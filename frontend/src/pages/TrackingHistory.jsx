@@ -269,7 +269,19 @@ export function TrackingHistory() {
                     onClick={() => setSelectedTracking(tracking)}
                   >
                     <h3>{tracking.custom_name}</h3>
-                    <p className="wb-id">Артикул: {tracking.wb_item_id}</p>
+                    <p className="wb-id">
+                      Артикул:{" "}
+                      <a 
+                        href={`https://www.wildberries.ru/catalog/${tracking.wb_item_id}/detail.aspx`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{color: '#2563eb', textDecoration: 'none'}}
+                        onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+                        onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+                      >
+                        {tracking.wb_item_id}
+                      </a>
+                    </p>
                     <p className="target-price">
                       Цель: {tracking.desired_price ? `${tracking.desired_price} ₽` : 'не задана'}
                     </p>
