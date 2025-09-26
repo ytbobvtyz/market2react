@@ -19,6 +19,7 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
   // Добавляем обработчики для OAuth
   const handleOAuthSuccess = () => {
     // OAuth flow обрабатывается автоматически через redirect
+    console.log('OAuth process started successfully');
     onClose();
   };
 
