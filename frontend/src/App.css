@@ -458,6 +458,29 @@ a:focus-visible {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+/* Фикс для кнопок авторизации */
+.header-actions .auth-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.header-actions .auth-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  backdrop-filter: blur(10px);
+}
+
+.header-actions .auth-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
 
 .header-actions .auth-btn.primary {
   background: rgba(255, 255, 255, 0.2);
