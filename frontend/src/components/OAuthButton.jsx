@@ -11,7 +11,7 @@ const OAuthButton = ({ provider, onSuccess, onError }) => {
     const envApiUrl = import.meta.env.VITE_API_URL;
     
     if (envApiUrl) {
-      return `${envApiUrl}/api/oauth/${provider}`;
+      return `${envApiUrl}api/oauth/${provider}`;
     }
     
     if (window.location.origin.includes('localhost')) {
