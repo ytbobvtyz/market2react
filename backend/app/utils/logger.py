@@ -55,3 +55,6 @@ def get_auth_logger():
 
 def get_schedule_logger():
     return setup_logger('scheduler', 'schedule.log')
+
+def get_telegram_loger():
+    return setup_logger('telegram', 'telegram.log')

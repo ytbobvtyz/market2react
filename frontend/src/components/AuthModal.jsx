@@ -3,6 +3,7 @@ import { api } from '../api/apiService';
 import './AuthModal.css';
 // Добавляем импорт OAuthButton
 import OAuthButton from './OAuthButton';
+import TelegramAuth from './TelegramAuth';
 
 export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
   const [formData, setFormData] = useState({
@@ -173,6 +174,21 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
     }
   };
 
+  // Обработчик
+  const handleTelegramAuth = async (userData) => {
+    try {
+      const response = await api.post('/auth/telegram', userData);
+      localStorage.setItem('access_token', response.data.access_token);
+      onLogin({
+        user: response.data.user,
+        token: response.data.access_token
+      });
+      onClose();
+    } catch (error) {
+      setErrors({ general: 'Ошибка авторизации через Telegram' });
+    }
+  };
+  
   return (
     <div className="modal-overlay">
       <div className="modal">
@@ -191,6 +207,10 @@ export function AuthModal({ isLoginMode, onClose, onLogin, switchMode }) {
             provider="google" 
             onSuccess={handleOAuthSuccess}
             onError={handleOAuthError}
+          />
+          <TelegramAuth 
+            botUsername="WishbenefitBot"
+            onAuth={handleTelegramAuth}
           />
         </div>
 

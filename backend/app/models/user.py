@@ -9,6 +9,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
+    phone_number = Column(String, unique=True, index=True, nullable=True)
     telegram_chat_id = Column(String(100), nullable=True)
     subscription_tier = Column(String(100), nullable=True)
     password_hash = Column(String(255), nullable=False)
