@@ -132,20 +132,6 @@ async def delete_tracking(tracking_id: int, telegram_id: int, db: Session = Depe
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/users/telegram/{telegram_id}")
-async def check_telegram_user(telegram_id: int, db: Session = Depends(get_db)):
-    """Проверка существования пользователя по Telegram ID"""
-    try:
-        user = db.query(User).filter(User.telegram_id == telegram_id).first()
-        return {
-            "exists": user is not None,
-            "user_id": user.id if user else None,
-            "username": user.username if user else None,
-            "email": user.email if user else None
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 # Эндпоинты для управления отслеживаниями через web-интерфейс
 @router.get("/")
 async def get_trackings(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
@@ -193,3 +179,9 @@ async def check_all_prices(db: Session = Depends(get_db)):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/debug-context")
+async def debug_context(telegram_id: int):
+    """Дебаг контекста (временная функция)"""
+    # Эта функция поможет посмотреть что хранится в context
+    return {"message": "Add debug logging to see context"}

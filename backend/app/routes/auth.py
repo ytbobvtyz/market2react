@@ -243,3 +243,28 @@ async def get_current_user_endpoint(
     except Exception as e:
         logger.error(f"Error in get_current_user_endpoint: {str(e)}")
         raise
+
+@router.put("/password")
+async def update_password(password_data: dict, db: Session = Depends(get_db)):
+    """Обновление пароля пользователя"""
+    try:
+        phone_number = password_data.get('phone_number')
+        password_hash = password_data.get('password_hash')
+        
+        if not phone_number or not password_hash:
+            raise HTTPException(status_code=400, detail="Phone number and password hash required")
+        
+        user = db.query(User).filter(User.phone_number == phone_number).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user.password_hash = password_hash
+        db.commit()
+        
+        return {"message": "Password updated successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
