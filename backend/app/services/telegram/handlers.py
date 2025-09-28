@@ -50,20 +50,40 @@ async def help_command(update, context):
     await update.message.reply_text(help_text, parse_mode='Markdown')
 
 async def auth_command(update, context):
-    """Простая авторизация через кнопку номера телефона"""
-    logger.info("🔐 Auth command received")
-
-    keyboard = [[
-        InlineKeyboardButton(
-            "📱 Авторизация через сайт",
-            web_app=WebAppInfo(url="https://wblist.ru/telegram-auth")
+    """Авторизация через Web App с OAuth"""
+    try:
+        user = update.effective_user
+        
+        # Создаем URL для Web App с передачей Telegram данных
+        web_app_url = f"https://wblist.ru/telegram-auth?tg_init_data={user.id}"
+        
+        # Создаем кнопку с Web App
+        keyboard = [[
+            InlineKeyboardButton(
+                "🔐 Привязать аккаунт", 
+                web_app=WebAppInfo(url=web_app_url)
+            )
+        ]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(
+            "🔐 *Привязка аккаунта*\n\n"
+            "Для доступа к функциям бота привяжите ваш аккаунт через безопасную OAuth авторизацию.\n\n"
+            "Нажмите кнопку ниже чтобы открыть форму привязки:",
+            parse_mode='Markdown',
+            reply_markup=reply_markup
         )
-    ]]
-    
-    await update.message.reply_text(
-        "Нажмите кнопку для авторизации через Web App:",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+        
+    except Exception as e:
+        logger.error(f"Web App auth error: {e}")
+        # Fallback на простой текст если Web App не работает
+        await update.message.reply_text(
+            "🔐 *Авторизация*\n\n"
+            "Для привязки аккаунта перейдите на сайт:\n"
+            "https://wblist.ru/telegram-auth\n\n"
+            "Или используйте OAuth авторизацию на основном сайте.",
+            parse_mode='Markdown'
+        )
     
 async def forgot_password_command(update, context):
     """Заглушка для восстановления пароля"""
@@ -182,7 +202,7 @@ async def handle_tracking_confirmation(query, context, item_id):
         await request_immediate_authorization(query, context, user, item_id)
 
 async def request_immediate_authorization(query, context, user, item_id):
-    """Запрос авторизации при сохранении товара"""
+    """Запрос авторизации при сохранении товара через Web App"""
     logger.info("🔐 Requesting immediate authorization for tracking")
     
     # Сохраняем информацию о товаре
@@ -192,24 +212,27 @@ async def request_immediate_authorization(query, context, user, item_id):
         'message_id': query.message.message_id
     }
     
-    # Создаем клавиатуру с кнопкой номера телефона
-    keyboard = [[KeyboardButton("📱 Поделиться номером", request_contact=True)]]
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
+    # Создаем Web App URL
+    web_app_url = f"https://wblist.ru/telegram-auth?tg_init_data={user.id}&tracking_item={item_id}"
+    
+    # Создаем кнопку с Web App
+    keyboard = [[
+        InlineKeyboardButton(
+            "🔐 Привязать аккаунт", 
+            web_app=WebAppInfo(url=web_app_url)
+        )
+    ]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
     
     # Редактируем сообщение с товаром
     await query.edit_message_text(
         "🔐 *Для сохранения требуется авторизация*\n\n"
-        "Нажмите кнопку ниже чтобы поделиться номером телефона и автоматически добавить товар.",
+        "Нажмите кнопку ниже чтобы привязать аккаунт через безопасную OAuth авторизацию.\n\n"
+        "После привязки товар будет автоматически добавлен в отслеживание.",
         parse_mode='Markdown',
-        reply_markup=None
-    )
-    
-    # Отправляем сообщение с кнопкой
-    await query.message.reply_text(
-        "Нажмите для авторизации:",
         reply_markup=reply_markup
     )
-
+    
 async def handle_auth_cancel(query, context):
     """Обработка отмены авторизации"""
     await query.edit_message_text(
