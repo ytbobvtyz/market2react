@@ -55,7 +55,7 @@ async def auth_command(update, context):
         user = update.effective_user
         
         # Создаем URL для Web App с передачей Telegram данных
-        web_app_url = f"https://wblist.ru/telegram-auth?tg_init_data={user.id}"
+        web_app_url = f"https://wblist.ru/telegram-auth?tg_user_id={user.id}&source=bot&username={user.username}"
         
         # Создаем кнопку с Web App
         keyboard = [[
@@ -76,7 +76,6 @@ async def auth_command(update, context):
         
     except Exception as e:
         logger.error(f"Web App auth error: {e}")
-        # Fallback на простой текст если Web App не работает
         await update.message.reply_text(
             "🔐 *Авторизация*\n\n"
             "Для привязки аккаунта перейдите на сайт:\n"
@@ -213,7 +212,7 @@ async def request_immediate_authorization(query, context, user, item_id):
     }
     
     # Создаем Web App URL
-    web_app_url = f"https://wblist.ru/telegram-auth?tg_init_data={user.id}&tracking_item={item_id}"
+    web_app_url = f"https://wblist.ru/telegram-auth?tg_user_id={user.id}&source=bot&tracking_item={item_id}"
     
     # Создаем кнопку с Web App
     keyboard = [[
