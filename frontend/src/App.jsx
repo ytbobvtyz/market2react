@@ -315,7 +315,8 @@ function App() {
       <Route path="/history" element={<TrackingHistory />} />
       <Route path="/oauth/callback" element={<OAuthCallback />} />
       <Route path="/oauth/success" element={<OAuthSuccess />} />
-      <Route path="/telegram-auth" element={<TelegramAuthWrapper />} />
+      {/* <Route path="/telegram-auth" element={<TelegramAuthWrapper />} /> */}
+      <Route path="/telegram-auth" element={<TelegramAuthPage />} />
     </Routes>
   );
 }
