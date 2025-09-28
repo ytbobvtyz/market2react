@@ -18,6 +18,7 @@ from app.routes.tracking import router as tracking_router
 from app.routes.otp import router as otp_router
 from app.routes.telegram import router as telegram_router
 from app.routes.telegram_auth import router as telegram_auth_router
+from app.routes.telegram_oauth import router as telegram_oauth_router
 
 from app.database import engine
 from app.models import user, tracking as tracking_models, price_history
@@ -118,6 +119,7 @@ app.include_router(tracking_router, prefix="/api")
 app.include_router(otp_router)
 app.include_router(telegram_router)
 app.include_router(telegram_auth_router)
+app.include_router(telegram_oauth_router)
 
 @app.get("/")
 def read_root():

@@ -57,3 +57,7 @@ def create_oauth_user(db: Session, user_data: dict) -> User:
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def get_user_by_telegram_id(db: Session, telegram_id: int):
+    """Поиск пользователя по Telegram ID"""
+    return db.query(User).filter(User.telegram_id == telegram_id).first()

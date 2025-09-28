@@ -36,9 +36,12 @@ async def google_oauth():
 async def google_oauth_callback(
     request: Request,
     code: str,
+    source: str = None,  # Новый параметр - источник (telegram)
+    tg_id: str = None,   # Telegram ID если есть
+    tg_username: str = None,
     db: Session = Depends(get_db)
 ):
-    """Обработка callback от Google"""
+    """Обработка callback от Google с поддержкой Telegram"""
     try:
         # 1. Обмен code на access token
         token_url = "https://oauth2.googleapis.com/token"
@@ -75,20 +78,33 @@ async def google_oauth_callback(
                 "username": user_data.get("name", email.split('@')[0]),
                 "oauth_provider": "google",
                 "oauth_id": user_data["sub"],
-                "is_verified": True  # Google уже проверил email
+                "is_verified": True
             }
             user = create_oauth_user(db, user_data_for_db)
         
-        # 4. Создание JWT токена
+        # 4. Если пришли из Telegram - автоматически привязываем Telegram ID
+        if source == 'telegram' and tg_id and user:
+            # Проверяем, не привязан ли уже этот Telegram ID
+            existing_user_with_tg = get_user_by_telegram_id(db, int(tg_id))
+            if not existing_user_with_tg or existing_user_with_tg.id == user.id:
+                user.telegram_id = int(tg_id)
+                user.telegram_username = tg_username
+                db.commit()
+        
+        # 5. Создание JWT токена
         access_token = create_access_token({"sub": user.email})
         
-        # 5. Перенаправление на фронтенд с токеном
-        frontend_success_url = f"{FRONTEND_URL}/oauth/success?token={access_token}&user_id={user.id}"
-        print(f"🎯 Redirecting to: {frontend_success_url}")  # Для дебага
+        # 6. Разные redirects для разных источников
+        if source == 'telegram':
+            # Для Telegram Web App возвращаем на специальную страницу
+            frontend_success_url = f"{FRONTEND_URL}/telegram-auth?token={access_token}&user_id={user.id}"
+        else:
+            # Стандартный redirect
+            frontend_success_url = f"{FRONTEND_URL}/oauth/success?token={access_token}&user_id={user.id}"
+            
         return RedirectResponse(frontend_success_url)
         
     except Exception as e:
-        # В случае ошибки перенаправляем на фронтенд с ошибкой
         error_url = f"{FRONTEND_URL}/oauth/error?message={str(e)}"
         return RedirectResponse(error_url)
 
