@@ -11,7 +11,7 @@ import './App.css';
 import { api } from './api/apiService';
 import OAuthCallback from './pages/OAuthCallback';
 import OAuthSuccess from './pages/OAuthSuccess';
-import TelegramAuthWrapper from './components/TelegramAuthWrapper';
+// import TelegramAuthWrapper from './components/TelegramAuthWrapper';
 
 const setupAxiosInterceptors = () => {
   api.interceptors.request.use(config => {
@@ -315,7 +315,7 @@ function App() {
       <Route path="/history" element={<TrackingHistory />} />
       <Route path="/oauth/callback" element={<OAuthCallback />} />
       <Route path="/oauth/success" element={<OAuthSuccess />} />
-      <Route path="/telegram-auth" element={<TelegramAuthWrapper />} />
+      {/* <Route path="/telegram-auth" element={<TelegramAuthWrapper />} /> */}
       {/* <Route path="/telegram-auth" element={<TelegramAuthPage />} /> */}
     </Routes>
   );
