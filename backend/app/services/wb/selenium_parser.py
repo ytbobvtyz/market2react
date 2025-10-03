@@ -13,9 +13,38 @@ class WBSeleniumParser(BaseParser):
         self.driver = None
         self.wait = None
         self.temp_dir = None  # Добавляем хранение пути к temp dir
+# Добавляем свойство для хранения текущего артикула
+    @property
+    def current_article(self):
+        return getattr(self, '_current_article', 'unknown')
+
+    @current_article.setter
+    def current_article(self, value):
+        self._current_article = value
+
+    def get_full_page_text(self):
+        """
+        Получает весь видимый текст страницы (аналог Ctrl+A)
+        Этот метод должен быть объявлен в классе
+        """
+        try:
+            # Ожидаем загрузки body
+            self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            
+            # Получаем весь текст body
+            body_element = self.driver.find_element(By.TAG_NAME, "body")
+            full_text = body_element.text
+            
+            print(f"Получено текста: {len(full_text)} символов")
+            return full_text
+            
+        except Exception as e:
+            print(f"Ошибка получения текста страницы: {e}")
+            return None
         
     def parse(self, article: str) -> dict:
         try:
+            self.current_article = article
             # Инициализируем драйвер
             self.driver = get_driver()
             # Сохраняем temp_dir из драйвера для последующей очистки
@@ -82,9 +111,9 @@ class WBSeleniumParser(BaseParser):
             html = self.driver.page_source
             
             # Сохраняем HTML для отладки
-            # with open(f"debug_{article}.html", "w", encoding="utf-8") as f:
+            # with open(f"debug_{self.current_article}.html", "w", encoding="utf-8") as f:
             #     f.write(html)
-            # print(f"HTML сохранен в debug_{article}.html")
+            # print(f"HTML сохранен в debug_{self.current_article}.html")
             
             soup = BeautifulSoup(html, 'html.parser')
             
@@ -147,7 +176,42 @@ class WBSeleniumParser(BaseParser):
             print(f"Ошибка извлечения названия: {e}")
             return None
 
+
     def _extract_price(self, soup):
+        """Улучшенный метод извлечения цены с приоритетом поиска пар"""
+        try:
+            # Сначала пробуем традиционные методы
+            traditional_price = self._try_traditional_methods(soup)
+            if traditional_price:
+                print(f"Цена найдена традиционным методом: {traditional_price} ₽")
+                return traditional_price
+            
+            # Если не сработало - получаем весь текст страницы
+            print("Традиционные методы не сработали, ищем в полном тексте...")
+            full_text = self.get_full_page_text()
+            
+            if not full_text:
+                return None
+            
+            # Сохраняем текст для отладки
+            # with open(f"full_text_{self.current_article}.txt", "w", encoding="utf-8") as f:
+            #     f.write(full_text)
+            # print(f"Полный текст сохранён в full_text_{self.current_article}.txt")
+            
+            # Сначала ищем пары цен (более надёжный метод)
+            price = self._find_price_in_text(full_text)
+            if price:
+                print(f"Цена найдена через поиск пар: {price} ₽")
+                return price
+            
+            print("Цена не найдена даже в полном тексте")
+            return None
+            
+        except Exception as e:
+            print(f"Ошибка в улучшенном extract_price: {e}")
+            return None
+    
+    def _try_traditional_methods(self, soup):
         try:
             price_selectors = [
                 'span.price-block__final-price',
@@ -171,101 +235,9 @@ class WBSeleniumParser(BaseParser):
                         result = int(digits)
                         print(f"Цена после обработки: {result}")
                         return result
-            
-            # Поиск в JSON-LD
-            script = soup.find('script', type='application/ld+json')
-            if script:
-                try:
-                    data = json.loads(script.string)
-                    # Проверяем разные возможные пути к цене в JSON-LD
-                    price_paths = [
-                        data.get('offers', {}).get('price'),
-                        data.get('offers', {}).get('priceCurrency'),
-                        data.get('mainEntity', {}).get('offers', {}).get('price'),
-                        data.get('product', {}).get('offers', {}).get('price')
-                    ]
-                    
-                    for price in price_paths:
-                        if price and isinstance(price, (int, float)):
-                            print(f"Цена из JSON-LD: {price}")
-                            return float(price)
-                except Exception as json_error:
-                    print(f"Ошибка парсинга JSON-LD: {json_error}")
-            
-            # РЕЗЕРВНЫЙ СПОСОБ: Поиск цены в title и meta-тегах
-            return self._extract_price_from_meta(soup)
-                
+            return None
         except Exception as e:
             print(f"Ошибка извлечения цены: {e}")
-            return None
-
-    def _extract_price_from_meta(self, soup):
-        """
-        Резервный метод извлечения цены из meta-тегов и title
-        """
-        try:
-            print("Пытаемся извлечь цену из meta-тегов и title...")
-            
-            # 1. Поиск в meta description
-            meta_description = soup.find('meta', {'name': 'description'})
-            if meta_description and meta_description.get('content'):
-                description = meta_description['content']
-                print(f"Meta description: {description}")
-                
-                # Ищем паттерны типа "купить за 44 404 ₽"
-                price_patterns = [
-                    r'купить за\s+([\d\s&nbsp;]+?₽)',
-                    r'цена\s+([\d\s&nbsp;]+?₽)',
-                    r'стоимость\s+([\d\s&nbsp;]+?₽)',
-                    r'за\s+([\d\s&nbsp;]+?₽)'
-                ]
-                
-                for pattern in price_patterns:
-                    match = re.search(pattern, description, re.IGNORECASE)
-                    if match:
-                        price_text = match.group(1)
-                        print(f"Найдена цена в description: {price_text}")
-                        return self._parse_price_text(price_text)
-            
-            # 2. Поиск в title
-            title = soup.find('title')
-            if title and title.text:
-                title_text = title.text
-                print(f"Title: {title_text}")
-                
-                # Ищем паттерны в title
-                title_patterns = [
-                    r'купить за\s+([\d\s&nbsp;]+?₽)',
-                    r'за\s+([\d\s&nbsp;]+?₽)',
-                    r'([\d\s&nbsp;]+?₽)\s+в интернет',
-                    r'цена\s+([\d\s&nbsp;]+?₽)'
-                ]
-                
-                for pattern in title_patterns:
-                    match = re.search(pattern, title_text, re.IGNORECASE)
-                    if match:
-                        price_text = match.group(1)
-                        print(f"Найдена цена в title: {price_text}")
-                        return self._parse_price_text(price_text)
-            
-            # 3. Поиск в других meta-тегах
-            meta_og_price = soup.find('meta', property='og:price:amount')
-            if meta_og_price and meta_og_price.get('content'):
-                price = meta_og_price['content']
-                print(f"Цена из og:price:amount: {price}")
-                return float(price)
-            
-            meta_product_price = soup.find('meta', {'itemprop': 'price'})
-            if meta_product_price and meta_product_price.get('content'):
-                price = meta_product_price['content']
-                print(f"Цена из itemprop=price: {price}")
-                return float(price)
-            
-            print("Цена не найдена в meta-тегах")
-            return None
-            
-        except Exception as e:
-            print(f"Ошибка извлечения цены из meta: {e}")
             return None
 
     def _parse_price_text(self, price_text):
@@ -276,7 +248,7 @@ class WBSeleniumParser(BaseParser):
         try:
             # Заменяем &nbsp; на пробелы и удаляем всё кроме цифр
             cleaned_text = price_text.replace('&nbsp;', ' ').replace(' ', '')
-            
+             
             # Удаляем всё кроме цифр
             digits = re.sub(r'[^\d]', '', cleaned_text)
             
@@ -291,7 +263,122 @@ class WBSeleniumParser(BaseParser):
         except Exception as e:
             print(f"Ошибка преобразования цены: {e}")
             return None
+
+    def _find_price_in_text(self, text):
+        """Ищет первую пару цен в тексте, предварительно проверяя наличие товара"""
+        try:
+            print("Проверяем наличие товара...")
+            
+            # Сначала проверяем, есть ли товар в наличии
+            out_of_stock_phrases = [
+                'нет в наличии',
+                'товара нет в наличии',
+                'недоступен для покупки',
+                'раскупили',
+                'закончился',
+                'out of stock',
+                'недоступно'
+            ]
+            
+            text_lower = text.lower()
+            for phrase in out_of_stock_phrases:
+                if phrase in text_lower:
+                    print(f"Товар отсутствует: найдена фраза '{phrase}'")
+                    return None
+            
+            print("Товар в наличии, ищем цену...")
+            
+            # Основной паттерн для поиска пар цен: "ЦЕНА ₽ ЦЕНА ₽"
+            price_pair_patterns = [
+                r'(\d{1,3}(?:\s\d{3})*)\s*₽\s*(\d{1,3}(?:\s\d{3})*)\s*₽',  # 1 196 ₽ 3 000 ₽
+                r'(\d+)\s*₽\s*(\d+)\s*₽',  # 1196 ₽ 3000 ₽
+                r'цена[^\d]*(\d[\d\s]*)\s*₽[^\d]*(\d[\d\s]*)\s*₽',  # цена 1 196 ₽ 3 000 ₽
+            ]
+            
+            # Ищем первую подходящую пару цен
+            for pattern in price_pair_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    price1_text = match.group(1)
+                    price2_text = match.group(2)
+                    
+                    price1 = self._parse_single_price(price1_text)
+                    price2 = self._parse_single_price(price2_text)
+                    
+                    if price1 and price2:
+                        # Выбираем меньшую цену как актуальную
+                        actual_price = min(price1, price2)
+                        print(f"Найдена пара цен: {price1} ₽ и {price2} ₽ → берём {actual_price} ₽")
+                        return actual_price
+            
+            # Если не нашли пар, ищем одиночные цены
+            print("Пар цен не найдено, ищем одиночные цены...")
+            return self._find_single_price_in_text(text)
+            
+        except Exception as e:
+            print(f"Ошибка поиска пар цен в тексте: {e}")
+            return None
         
+    def _find_single_price_in_text(self, text):
+        """Резервный метод для поиска одиночных цен"""
+        try:
+            single_price_patterns = [
+                r'(\d{1,3}(?:\s\d{3})*)\s*₽',  # 1 196 ₽
+                r'цена[^\d]*(\d[\d\s]*)\s*₽',  # цена 1 196 ₽
+                r'купить за[^\d]*(\d[\d\s]*)\s*₽',  # купить за 1 196 ₽
+                r'final.price[^\d]*(\d+)\s*₽',  # final price 1196 ₽
+            ]
+            
+            found_prices = []
+            
+            for pattern in single_price_patterns:
+                matches = re.findall(pattern, text, re.IGNORECASE)
+                for price_text in matches:
+                    price = self._parse_single_price(price_text)
+                    if price and self._is_realistic_price(price):
+                        found_prices.append(price)
+                        print(f"Найдена одиночная цена: {price} ₽")
+            
+            if found_prices:
+                # Для одиночных цен берём минимальную (наиболее вероятно актуальную)
+                actual_price = min(found_prices)
+                print(f"Выбрана минимальная из одиночных цен: {actual_price} ₽")
+                return actual_price
+            
+            return None
+            
+        except Exception as e:
+            print(f"Ошибка поиска одиночных цен: {e}")
+            return None
+
+    def _parse_single_price(self, price_text):
+        """Парсит отдельную цену из текста"""
+        try:
+            if not price_text:
+                return None
+                
+            # Очищаем текст: убираем пробелы, &nbsp; и нецифровые символы
+            cleaned_text = str(price_text).replace(' ', '').replace('&nbsp;', '').replace('\u202f', '')
+            cleaned_text = re.sub(r'[^\d]', '', cleaned_text)
+            
+            if cleaned_text and cleaned_text.isdigit():
+                price = int(cleaned_text)
+                return price
+                
+            return None
+            
+        except Exception as e:
+            print(f"Ошибка парсинга отдельной цены '{price_text}': {e}")
+            return None
+
+    def _is_realistic_price(self, price):
+        """Проверяет, что цена реалистичная (отсеивает артикулы, рейтинги и т.д.)"""
+        try:
+            # Цены обычно в диапазоне 10 - 500 000 рублей
+            return 10 <= price <= 500000
+        except:
+            return False
+
     def _extract_brand(self, soup):
         """
         Простой метод извлечения бренда из ссылок, содержащих /brands/

@@ -5,7 +5,7 @@ import httpx
 from app.database import get_db
 from app.models.user import User
 from app.utils.auth import create_access_token, get_current_user
-from app.services.db_service import get_user_by_email, create_oauth_user
+from app.services.db_service import get_user_by_email, create_oauth_user, get_user_by_telegram_id
 import os
 from dotenv import load_dotenv
 
