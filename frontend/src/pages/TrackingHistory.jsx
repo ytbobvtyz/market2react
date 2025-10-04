@@ -124,7 +124,7 @@ export function TrackingHistory() {
         if (prev >= 95) return 95;
         return prev + 5;
       });
-    }, 1000);
+    }, 2000);
 
     try {
       console.log('Начинаем обновление цены для товара:', trackingId);
@@ -434,7 +434,7 @@ export function TrackingHistory() {
                 <div className="update-progress">
                   <div className="progress-bar">
                     <div 
-                      className="progress-fill" 
+                      className="update-progress" 
                       style={{ width: `${updateProgress}%` }}
                     ></div>
                   </div>

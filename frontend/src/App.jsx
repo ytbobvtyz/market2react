@@ -99,7 +99,7 @@ function MainApp() {
         if (prev >= 95) return 95;
         return prev + 5;
       });
-    }, 1000);
+    }, 2000);
 
     try {
       console.log('Начинаем парсинг товара:', nmId);

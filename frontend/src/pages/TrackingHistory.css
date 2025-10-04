@@ -742,3 +742,25 @@
 .tracking-list::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Основные стили для поддержки тёмной темы */
+.edit-form input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border, #cccccc);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--input-bg, #ffffff);
+  color: var(--input-text, #000000);
+  transition: all 0.2s;
+}
+
+.edit-form input:focus {
+  outline: none;
+  border-color: var(--primary-color, #007bff);
+  box-shadow: 0 0 0 2px var(--primary-shadow, rgba(0, 123, 255, 0.25));
+}
+
+.edit-form input::placeholder {
+  color: var(--placeholder-color, #6c757d);
+}
